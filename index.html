@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Chosen Palette: Warm Neutral Harmony -->
+    <!-- Application Structure Plan: A single-page dashboard designed for clarity and quick access to key project areas. The structure flows from high-level vision to specific details: 1. Vision & Strategy, 2. Team & Roles (interactive), 3. Technical Setup (visual diagram), 4. Interactive Timeline/Roadmap (Chart.js Gantt), and 5. Detailed Individual Schedules (dynamically shown). This structure allows users to get a quick overview and then drill down into specific areas of interest, which is more user-friendly than a linear report. -->
+    <!-- Visualization & Content Choices: Report Info: Project Timeline -> Goal: Organize & Change -> Viz: Interactive Gantt Chart (Chart.js) -> Interaction: Filter by phase/person -> Justification: Allows easy visualization of the entire project schedule and individual responsibilities over time. Report Info: Team Roles & Tasks -> Goal: Organize & Inform -> Viz: Interactive HTML/CSS Cards -> Interaction: Click to expand -> Justification: Presents a clean overview of the team, with details available on demand to avoid clutter. Report Info: Camera Setup -> Goal: Inform -> Viz: HTML/CSS Diagram -> Interaction: Hover for info -> Justification: A visual representation is more intuitive than a text list for understanding the complex 18-camera setup. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
     <title>지지 프로덕션 2025 WSOP Cyprus 인터랙티브 계획서</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -217,7 +222,7 @@
                  <ul class="mt-8 text-center text-gray-700 grid grid-cols-2 sm:grid-cols-3 gap-2 max-w-3xl mx-auto">
                     <li>🎥 Sony FR7 (PTZ) x 5</li>
                     <li>🃏 보드 캠 (Hole Card) x 1</li>
-                    <li>🔝 탑 캠 (Overhead) x 1</li>
+                    <li>� 탑 캠 (Overhead) x 1</li>
                     <li>🏃 프리 캠 (Freelance) x 1</li>
                     <li>🖼️ 풀 샷 캠 (Full Shot) x 1</li>
                     <li class="font-bold col-span-full sm:col-auto">총 9대 / 테이블</li>
@@ -340,21 +345,31 @@
                     { phase: 4, label: '4단계: 최종 준비', start: 15, end: 15, color: 'rgba(239, 68, 68, 0.6)'}
                 ],
                 tasks: [
-                    { phase: 1, label: '킥오프 및 분석', member: 'aiden', start: 0, end: 0},
-                    { phase: 1, label: '18캠 운용 전략 수립', member: 'matthew', start: 1, end: 1},
+                    { phase: 1, label: '프로젝트 총괄 기획', member: 'aiden', start: 0, end: 2},
+                    { phase: 1, label: '5월 MPP 분석 및 레퍼런스 수집', member: 'kai', start: 0, end: 1},
                     { phase: 1, label: 'A컷 스타일가이드 V0.1', member: 'kai', start: 2, end: 2},
-                    { phase: 1, label: '신규 스위처 설계', member: 'trey', start: 2, end: 3},
-                    { phase: 2, label: 'R&D: 구도/앵글', member: 'kai', start: 3, end: 3},
-                    { phase: 2, label: 'R&D: 조명', member: 'matthew', start: 4, end: 5},
-                    { phase: 2, label: 'R&D: 색감/톤앤매너', member: 'kai', start: 6, end: 7},
-                    { phase: 2, label: 'R&D: 배경/DoF', member: 'kai', start: 8, end: 8},
+                    { phase: 1, label: '18캠 시스템 구성/요구사항 정의', member: 'matthew', start: 0, end: 1},
+                    { phase: 1, label: '6GHz 시스템 리서치/준비', member: 'matthew', start: 2, end: 3},
+
+                    { phase: 2, label: '팀 R&D 진행상황 점검/피드백', member: 'aiden', start: 3, end: 8},
                     { phase: 2, label: 'R&D: "킥 엣지" 디자인', member: 'aiden', start: 9, end: 9},
-                    { phase: 2, label: '신규 스위처 개발', member: 'trey', start: 4, end: 9},
                     { phase: 2, label: '기술 통합 및 최종 점검', member: 'aiden', start: 10, end: 10},
-                    { phase: 3, label: '리허설 (연출 총괄)', member: 'aiden', start: 11, end: 14},
+                    { phase: 2, label: 'R&D: 구도/앵글 심화', member: 'kai', start: 3, end: 4},
+                    { phase: 2, label: 'R&D: 색감/톤앤매너', member: 'kai', start: 5, end: 6},
+                    { phase: 2, label: 'R&D: 배경/DoF 및 6GHz 테스트', member: 'kai', start: 7, end: 8},
+                    { phase: 2, label: 'A컷 스타일가이드 V1.0 최종화', member: 'kai', start: 9, end: 10},
+                    { phase: 2, label: 'R&D: 조명 시스템 설계', member: 'matthew', start: 4, end: 5},
+                    { phase: 2, label: 'FR7 및 고정캠 최적화 R&D', member: 'matthew', start: 6, end: 7},
+                    { phase: 2, label: '사이프러스 물류/운송 계획', member: 'matthew', start: 8, end: 10},
+
+                    { phase: 2, label: '신규 스위처 분석/설계', member: 'trey', start: 7, end: 8},
+                    { phase: 2, label: '스위처 개발 및 GFX/아카이빙 연동', member: 'trey', start: 9, end: 10},
+                    
+                    { phase: 3, label: '리허설 총괄', member: 'aiden', start: 11, end: 14},
                     { phase: 3, label: '리허설 (미학/연출 점검)', member: 'kai', start: 11, end: 14},
                     { phase: 3, label: '리허설 (기술 지원)', member: 'matthew', start: 11, end: 14},
-                    { phase: 3, label: '리허설 (스위처 테스트)', member: 'trey', start: 11, end: 14},
+                    { phase: 3, label: '리허설 (스위처 통합 테스트)', member: 'trey', start: 11, end: 14},
+
                     { phase: 4, label: '최종 패킹 및 출국 준비', member: 'aiden', start: 15, end: 15},
                     { phase: 4, label: '최종 패킹 및 출국 준비', member: 'kai', start: 15, end: 15},
                     { phase: 4, label: '최종 패킹 및 출국 준비', member: 'matthew', start: 15, end: 15},
@@ -393,7 +408,7 @@
                                     const startWeek = weekLabels[context.raw[0]];
                                     const endWeek = weekLabels[context.raw[1] -1];
                                     if(!startWeek || !endWeek) return '';
-                                    if(startWeek === endWeek) return `${context.chart.data.labels[context.dataIndex]}: ${startWeek}`;
+                                    if(startWeek === endWeek) return `${context.chart.data.labels[context.dataIndex].substring(2)}: ${startWeek}`;
                                     return `${context.chart.data.labels[context.dataIndex].substring(2)}: ${startWeek} ~ ${endWeek}`;
                                 }
                             }
@@ -540,3 +555,4 @@
     </script>
 </body>
 </html>
+�
