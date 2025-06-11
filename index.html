@@ -3,11 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Chosen Palette: Warm Neutral Harmony -->
-    <!-- Application Structure Plan: A single-page dashboard designed for clarity and quick access to key project areas. The structure flows from high-level vision to specific details: 1. Vision & Strategy, 2. Team & Roles (interactive), 3. Technical Setup (visual diagram), 4. Interactive Timeline/Roadmap (Chart.js Gantt), and 5. Detailed Individual Schedules (dynamically shown). This structure allows users to get a quick overview and then drill down into specific areas of interest, which is more user-friendly than a linear report. -->
-    <!-- Visualization & Content Choices: Report Info: Project Timeline -> Goal: Organize & Change -> Viz: Interactive Gantt Chart (Chart.js) -> Interaction: Filter by phase/person -> Justification: Allows easy visualization of the entire project schedule and individual responsibilities over time. Report Info: Team Roles & Tasks -> Goal: Organize & Inform -> Viz: Interactive HTML/CSS Cards -> Interaction: Click to expand -> Justification: Presents a clean overview of the team, with details available on demand to avoid clutter. Report Info: Camera Setup -> Goal: Inform -> Viz: HTML/CSS Diagram -> Interaction: Hover for info -> Justification: A visual representation is more intuitive than a text list for understanding the complex 18-camera setup. -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
-
     <title>지지 프로덕션 2025 WSOP Cyprus 인터랙티브 계획서</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -233,19 +228,17 @@
         <section id="roadmap" class="mb-20">
             <h2 class="section-title text-3xl font-bold text-gray-900 mb-12 text-center">프로젝트 로드맵</h2>
             <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
-                 <div class="flex flex-wrap justify-center gap-2 mb-6 border-b pb-4">
-                    <p class="w-full text-center text-sm font-semibold text-gray-500 mb-2">단계별 보기</p>
-                    <button id="filter-all" class="btn btn-primary px-4 py-2 rounded-full">전체</button>
-                    <button id="filter-phase1" class="btn btn-secondary px-4 py-2 rounded-full">1단계: 분석/기획</button>
-                    <button id="filter-phase2" class="btn btn-secondary px-4 py-2 rounded-full">2단계: R&D</button>
-                    <button id="filter-phase3" class="btn btn-secondary px-4 py-2 rounded-full">3단계: 리허설</button>
-                </div>
                  <div class="flex flex-wrap justify-center gap-2 mb-6">
-                    <p class="w-full text-center text-sm font-semibold text-gray-500 mb-2">팀원별 보기</p>
-                    <button id="filter-aiden" class="btn btn-secondary px-4 py-2 rounded-full">👑 Aiden</button>
-                    <button id="filter-kai" class="btn btn-secondary px-4 py-2 rounded-full">🎨 Kai</button>
-                    <button id="filter-matthew" class="btn btn-secondary px-4 py-2 rounded-full">🛠️ Matthew</button>
-                    <button id="filter-trey" class="btn btn-secondary px-4 py-2 rounded-full">🕹️ Trey</button>
+                    <button id="filter-all" class="btn btn-primary px-4 py-2 rounded-full text-sm">전체</button>
+                    <button id="filter-phase1" class="btn btn-secondary px-4 py-2 rounded-full text-sm">1단계</button>
+                    <button id="filter-phase2" class="btn btn-secondary px-4 py-2 rounded-full text-sm">2단계</button>
+                    <button id="filter-phase3" class="btn btn-secondary px-4 py-2 rounded-full text-sm">3단계</button>
+                    <button id="filter-phase4" class="btn btn-secondary px-4 py-2 rounded-full text-sm">최종 준비</button>
+                    <span class="border-l mx-2"></span>
+                    <button id="filter-aiden" class="btn btn-secondary px-4 py-2 rounded-full text-sm">👑 Aiden</button>
+                    <button id="filter-kai" class="btn btn-secondary px-4 py-2 rounded-full text-sm">🎨 Kai</button>
+                    <button id="filter-matthew" class="btn btn-secondary px-4 py-2 rounded-full text-sm">🛠️ Matthew</button>
+                    <button id="filter-trey" class="btn btn-secondary px-4 py-2 rounded-full text-sm">🕹️ Trey</button>
                 </div>
                 <div class="chart-container">
                     <canvas id="ganttChart"></canvas>
@@ -256,7 +249,7 @@
 
     <footer class="bg-gray-800 text-white mt-20">
         <div class="container mx-auto px-8 py-4 text-center">
-            <p>&copy; 2025 GG Production. All Rights Reserved.</p>
+            <p>© 2025 GG Production. All Rights Reserved.</p>
         </div>
     </footer>
 
@@ -264,25 +257,25 @@
         document.addEventListener('DOMContentLoaded', () => {
 
             const teamData = [
-                { id: 'aiden', name: 'Aiden Kim', role: '파트 리더', emoji: '👑', color: 'bg-amber-100', tasks: [
+                { id: 'aiden', name: 'Aiden Kim', role: '파트 리더', emoji: '👑', color: 'rgba(217, 119, 6, 0.7)', tasks: [
                     'A컷 품질 향상 목표 설정 및 팀 비전 제시',
                     'A컷 스타일 가이드 최종 제안',
                     '팀원 R&D 방향 설정 및 성과 관리',
                     '리허설 지휘 및 현장 카메라 디렉팅',
                     '"킥 엣지" 특별 숏 시퀀스 창의적 연출 담당'
                 ]},
-                { id: 'kai', name: 'Kai Kim', role: '카메라 감독', emoji: '🎨', color: 'bg-blue-100', tasks: [
+                { id: 'kai', name: 'Kai Kim', role: '카메라 감독', emoji: '🎨', color: 'rgba(59, 130, 246, 0.7)', tasks: [
                     '프리캠(2인) 총괄 디렉팅 및 A컷 품질 책임',
                     'A컷 미학적 요소 (구도, 앵글) R&D 주도',
                     'A컷 스타일 가이드 시각적 레퍼런스 제작',
                     '6GHz 무선 시스템 등 전체 방송 장비 테스트/관리'
                 ]},
-                { id: 'matthew', name: 'Matthew Kim', role: '기술/장비 감독', emoji: '🛠️', color: 'bg-green-100', tasks: [
+                { id: 'matthew', name: 'Matthew Kim', role: '기술/장비 감독', emoji: '🛠️', color: 'rgba(22, 163, 74, 0.7)', tasks: [
                     '18캠 시스템 최적화 및 A컷 구현 설정 확보',
                     '조명/렌즈 등 기술 요소 R&D 및 최적 조합 연구',
                     '사이프러스 현지 장비 설치/운영 등 기술 물류 총괄'
                 ]},
-                { id: 'trey', name: 'Trey Song', role: '스위처 시스템 개발 / 운용', emoji: '🕹️', color: 'bg-purple-100', tasks: [
+                { id: 'trey', name: 'Trey Song', role: '스위처 시스템 개발 / 운용', emoji: '🕹️', color: 'rgba(120, 81, 169, 0.7)', tasks: [
                     '플레이어 액션 기반 신규 스위처 시스템 개발',
                     '휴먼 에러 최소화를 위한 스위칭 로직 구현',
                     '포커 도메인 분석을 통한 "킥 엣지" 발생 예측',
@@ -295,12 +288,13 @@
 
             teamData.forEach(member => {
                 const card = document.createElement('div');
-                card.className = `card p-6 rounded-xl text-center cursor-pointer member-card ${member.color}`;
+                card.className = `card p-6 rounded-xl text-center cursor-pointer member-card border-2 border-transparent`;
+                card.style.backgroundColor = member.color.replace('0.7', '0.1');
                 card.dataset.memberId = member.id;
                 card.innerHTML = `
                     <div class="text-5xl mb-3">${member.emoji}</div>
                     <h4 class="text-xl font-bold text-gray-800">${member.name}</h4>
-                    <p class="text-gray-600">${member.role}</p>
+                    <p class="font-semibold" style="color: ${member.color.replace('0.7', '1')}">${member.role}</p>
                 `;
                 teamCardsContainer.appendChild(card);
             });
@@ -312,8 +306,8 @@
                 const memberId = card.dataset.memberId;
                 const member = teamData.find(m => m.id === memberId);
 
-                document.querySelectorAll('.member-card').forEach(c => c.classList.remove('ring-2', 'ring-offset-2', 'ring-amber-600'));
-                card.classList.add('ring-2', 'ring-offset-2', 'ring-amber-600');
+                document.querySelectorAll('.member-card').forEach(c => c.style.borderColor = 'transparent');
+                card.style.borderColor = member.color.replace('0.7', '1');
                 
                 teamDetailsContainer.innerHTML = `
                     <div class="bg-white p-8 rounded-xl shadow-lg border border-gray-200 transition-all duration-500 ease-in-out transform opacity-0 -translate-y-4">
@@ -324,7 +318,9 @@
                     </div>
                 `;
                 setTimeout(() => {
-                    teamDetailsContainer.firstElementChild.classList.remove('opacity-0', '-translate-y-4');
+                    if(teamDetailsContainer.firstElementChild) {
+                        teamDetailsContainer.firstElementChild.classList.remove('opacity-0', '-translate-y-4');
+                    }
                 }, 10);
             });
             
@@ -332,34 +328,49 @@
                 '6월 W2','6월 W3','6월 W4',
                 '7월 W1','7월 W2','7월 W3','7월 W4',
                 '8월 W1','8월 W2','8월 W3','8월 W4',
-                '9월 W1','9월 W2','9월 W3','9월 W4', '9월 W5'
+                '9월 W1','9월 W2','9월 W3','9월 W4',
+                '10월 W1'
             ];
             
             const timelineData = {
                 all: [
-                    { phase: 1, label: '1단계: 분석/기획', start: 0, end: 2, color: 'rgba(120, 81, 169, 0.7)'},
-                    { phase: 2, label: '2단계: R&D 및 기술 심화', start: 3, end: 10, color: 'rgba(217, 119, 6, 0.7)'},
-                    { phase: 3, label: '3단계: 사전 리허설 및 최종 준비', start: 11, end: 15, color: 'rgba(22, 163, 74, 0.7)'}
+                    { phase: 1, label: '1단계: 분석/기획', start: 0, end: 2, color: 'rgba(168, 85, 247, 0.6)'},
+                    { phase: 2, label: '2단계: R&D', start: 3, end: 10, color: 'rgba(234, 179, 8, 0.6)'},
+                    { phase: 3, label: '3단계: 리허설', start: 11, end: 14, color: 'rgba(34, 197, 94, 0.6)'},
+                    { phase: 4, label: '4단계: 최종 준비', start: 15, end: 15, color: 'rgba(239, 68, 68, 0.6)'}
                 ],
                 tasks: [
-                    { phase: 1, label: '킥오프 및 분석', member: 'aiden', start: 0, end: 0, color: 'rgba(217, 119, 6, 0.5)' },
-                    { phase: 1, label: '18캠 운용 전략 수립', member: 'matthew', start: 1, end: 1, color: 'rgba(22, 163, 74, 0.5)' },
-                    { phase: 1, label: 'A컷 스타일가이드 V0.1', member: 'kai', start: 2, end: 2, color: 'rgba(59, 130, 246, 0.5)' },
-                    { phase: 1, label: '신규 스위처 설계', member: 'trey', start: 2, end: 3, color: 'rgba(120, 81, 169, 0.5)' },
-                    { phase: 2, label: 'R&D: 구도/앵글', member: 'kai', start: 3, end: 3, color: 'rgba(59, 130, 246, 0.5)' },
-                    { phase: 2, label: 'R&D: 조명', member: 'matthew', start: 4, end: 5, color: 'rgba(22, 163, 74, 0.5)' },
-                    { phase: 2, label: 'R&D: 색감/톤앤매너', member: 'kai', start: 6, end: 7, color: 'rgba(59, 130, 246, 0.5)' },
-                    { phase: 2, label: 'R&D: 배경/DoF', member: 'kai', start: 8, end: 8, color: 'rgba(59, 130, 246, 0.5)' },
-                    { phase: 2, label: 'R&D: "킥 엣지" 디자인', member: 'aiden', start: 9, end: 9, color: 'rgba(217, 119, 6, 0.5)' },
-                    { phase: 2, label: '신규 스위처 개발', member: 'trey', start: 4, end: 9, color: 'rgba(120, 81, 169, 0.5)' },
-                    { phase: 2, label: '기술 통합 및 최종 점검', member: 'aiden', start: 10, end: 10, color: 'rgba(217, 119, 6, 0.5)' },
-                    { phase: 3, label: '1차 리허설 (기술)', member: 'matthew', start: 11, end: 11, color: 'rgba(22, 163, 74, 0.5)' },
-                    { phase: 3, label: '2차 리허설 (연출)', member: 'aiden', start: 12, end: 12, color: 'rgba(217, 119, 6, 0.5)' },
-                    { phase: 3, label: '3차 리허설 (실전)', member: 'aiden', start: 13, end: 13, color: 'rgba(217, 119, 6, 0.5)' },
-                    { phase: 3, label: '스위처 통합 테스트', member: 'trey', start: 11, end: 13, color: 'rgba(120, 81, 169, 0.5)' },
-                    { phase: 3, label: '최종 장비 패킹/출국 준비', member: 'matthew', start: 14, end: 15, color: 'rgba(225, 29, 72, 0.5)' },
+                    { phase: 1, label: '킥오프 및 분석', member: 'aiden', start: 0, end: 0},
+                    { phase: 1, label: '18캠 운용 전략 수립', member: 'matthew', start: 1, end: 1},
+                    { phase: 1, label: 'A컷 스타일가이드 V0.1', member: 'kai', start: 2, end: 2},
+                    { phase: 1, label: '신규 스위처 설계', member: 'trey', start: 2, end: 3},
+                    { phase: 2, label: 'R&D: 구도/앵글', member: 'kai', start: 3, end: 3},
+                    { phase: 2, label: 'R&D: 조명', member: 'matthew', start: 4, end: 5},
+                    { phase: 2, label: 'R&D: 색감/톤앤매너', member: 'kai', start: 6, end: 7},
+                    { phase: 2, label: 'R&D: 배경/DoF', member: 'kai', start: 8, end: 8},
+                    { phase: 2, label: 'R&D: "킥 엣지" 디자인', member: 'aiden', start: 9, end: 9},
+                    { phase: 2, label: '신규 스위처 개발', member: 'trey', start: 4, end: 9},
+                    { phase: 2, label: '기술 통합 및 최종 점검', member: 'aiden', start: 10, end: 10},
+                    { phase: 3, label: '리허설 (연출 총괄)', member: 'aiden', start: 11, end: 14},
+                    { phase: 3, label: '리허설 (미학/연출 점검)', member: 'kai', start: 11, end: 14},
+                    { phase: 3, label: '리허설 (기술 지원)', member: 'matthew', start: 11, end: 14},
+                    { phase: 3, label: '리허설 (스위처 테스트)', member: 'trey', start: 11, end: 14},
+                    { phase: 4, label: '최종 패킹 및 출국 준비', member: 'aiden', start: 15, end: 15},
+                    { phase: 4, label: '최종 패킹 및 출국 준비', member: 'kai', start: 15, end: 15},
+                    { phase: 4, label: '최종 패킹 및 출국 준비', member: 'matthew', start: 15, end: 15},
+                    { phase: 4, label: '최종 패킹 및 출국 준비', member: 'trey', start: 15, end: 15},
                 ]
             };
+
+            const memberColorMap = teamData.reduce((acc, member) => {
+                acc[member.id] = member.color;
+                return acc;
+            }, {});
+            
+            const memberEmojiMap = teamData.reduce((acc, member) => {
+                acc[member.id] = member.emoji;
+                return acc;
+            }, {});
 
             const ctx = document.getElementById('ganttChart').getContext('2d');
             const ganttChart = new Chart(ctx, {
@@ -383,7 +394,7 @@
                                     const endWeek = weekLabels[context.raw[1] -1];
                                     if(!startWeek || !endWeek) return '';
                                     if(startWeek === endWeek) return `${context.chart.data.labels[context.dataIndex]}: ${startWeek}`;
-                                    return `${context.chart.data.labels[context.dataIndex]}: ${startWeek} ~ ${endWeek}`;
+                                    return `${context.chart.data.labels[context.dataIndex].substring(2)}: ${startWeek} ~ ${endWeek}`;
                                 }
                             }
                         }
@@ -448,10 +459,16 @@
                     filteredData = timelineData.tasks.filter(task => task.member === filter);
                 }
 
-                ganttChart.data.labels = filteredData.map(d => d.label);
+                ganttChart.data.labels = filteredData.map(d => {
+                    if (d.member) {
+                        return `${memberEmojiMap[d.member]} ${d.label}`;
+                    }
+                    return d.label;
+                });
+
                 ganttChart.data.datasets = [{
                     data: filteredData.map(d => [d.start, d.end + 1]),
-                    backgroundColor: filteredData.map(d => d.color),
+                    backgroundColor: filteredData.map(d => d.member ? memberColorMap[d.member] : d.color),
                     barPercentage: 0.6,
                     borderRadius: 4
                 }];
