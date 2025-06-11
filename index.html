@@ -8,7 +8,7 @@
     <!-- Visualization & Content Choices: Report Info: Project Timeline -> Goal: Organize & Change -> Viz: Interactive Gantt Chart (Chart.js) -> Interaction: Filter by phase/person -> Justification: Allows easy visualization of the entire project schedule and individual responsibilities over time. Report Info: Team Roles & Tasks -> Goal: Organize & Inform -> Viz: Interactive HTML/CSS Cards -> Interaction: Click to expand -> Justification: Presents a clean overview of the team, with details available on demand to avoid clutter. Report Info: Camera Setup -> Goal: Inform -> Viz: HTML/CSS Diagram -> Interaction: Hover for info -> Justification: A visual representation is more intuitive than a text list for understanding the complex 18-camera setup. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 
-    <title>지지 프로덕션 2025 WSOP Cyprus 카메라 파트 Vision Deck</title>
+    <title>지지 프로덕션 2025 WSOP Cyprus 인터랙티브 계획서</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
@@ -90,6 +90,20 @@
             text-decoration: underline;
             margin-left: 8px;
         }
+        .camera-icon {
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            color: #6B7280;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .tab-btn.active {
+            color: #A0522D;
+            border-bottom-color: #A0522D;
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -97,7 +111,7 @@
         <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center">
-                    <h1 class="text-xl font-bold text-gray-800">2025 WSOP Cyprus Super Circuit</h1>
+                    <h1 class="text-xl font-bold text-gray-800">2025 WSOP Cyprus</h1>
                 </div>
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="#vision" class="nav-link font-medium text-gray-600 pb-1">비전</a>
@@ -115,7 +129,7 @@
             <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">프로젝트 비전</h2>
             <p class="text-5xl md:text-6xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-amber-700 to-stone-700 py-4">"정적 화면의 정점"을 향하여</p>
             <p class="max-w-3xl mx-auto text-lg text-gray-600 mt-4">
-                모든 샷은 그 자체로 완벽한 미학적 가치를 지니며, <br> 결정적 순간에는 압도적인 연출로 시청자의 감정을 사로잡을 것입니다.
+                모든 샷은 그 자체로 완벽한 미학적 가치를 지니며, 결정적 순간에는 압도적인 연출로 시청자의 감정을 사로잡을 것입니다.
             </p>
         </section>
 
@@ -129,18 +143,18 @@
                     </div>
                     <p class="text-gray-600 mb-2 font-semibold">"정적 화면의 정점"</p>
                     <p class="text-gray-600">
-                        플레이어 미드 샷을 포함한 모든 기본 샷에서 일관되게 구현되는 최고 수준의 A컷. <br> 모든 샷을 완벽하게 계산된 사진 작품처럼 구성하여, <br> 방송 전체의 기본 품질을 격상시키고 지속적인 몰입감을 제공합니다.
+                        플레이어 미드 샷을 포함한 모든 기본 샷에서 일관되게 구현되는 최고 수준의 A컷. 모든 샷을 완벽하게 계산된 사진 작품처럼 구성하여, 방송 전체의 기본 품질을 격상시키고 지속적인 몰입감을 제공합니다.
                     </p>
                 </div>
                 <div class="card p-8 rounded-xl shadow-lg">
                     <div class="flex items-center mb-4">
                         <span class="text-3xl mr-4">🔥</span>
                         <h3 class="text-2xl font-bold text-gray-800">킥 엣지 (Kick Edge)</h3>
-                        <a href="https://youtu.be/QP5TZGTR3B8?t=28293" target="_blank" class="reference-link">레퍼런스 보기</a>
+                        <a href="https://www.youtube.com/live/QP5TZGTR3B8?si=OEsRaP6rLb_jJCVl&t=28293" target="_blank" class="reference-link">레퍼런스 보기</a>
                     </div>
                     <p class="text-gray-600 mb-2 font-semibold">"핵심 핸드의 다이나믹한 연출"</p>
                     <p class="text-gray-600">
-                        대회의 가장 중요한 분기점에서 펼쳐지는 특별한 숏 시퀀스. <br> 빅팟 올인, 중요 인물의 탈락 위기 등 주요 순간에 극적인 연출을 도입하여 시청자에게 강렬한 드라마와 감동을 선사합니다.
+                        대회의 가장 중요한 분기점에서 펼쳐지는 특별한 숏 시퀀스. 빅팟 올인, 중요 인물의 탈락 위기 등 주요 순간에 극적인 연출을 도입하여 시청자에게 강렬한 드라마와 감동을 선사합니다.
                     </p>
                 </div>
             </div>
@@ -156,40 +170,82 @@
         <section id="setup" class="mb-20">
             <h2 class="section-title text-3xl font-bold text-gray-900 mb-12 text-center">장비 구성: 18-Camera System</h2>
             <div class="bg-white p-8 rounded-xl shadow-lg border border-gray-200">
-                <p class="text-center text-gray-600 mb-8">안정적인 방송 제작을 위해 2개의 피처 테이블을 각각 9대의 카메라로 구성하여, 총 18대의 카메라 시스템을 운용합니다.</p>
-                <div class="grid md:grid-cols-2 gap-8">
-                    <div>
-                        <h3 class="text-xl font-bold text-center text-gray-800 mb-4">피처 테이블 1</h3>
-                        <ul class="space-y-2 text-center text-gray-700">
-                            <li>🎥 Sony FR7 (PTZ) x 5</li>
-                            <li>🃏 보드 캠 (Hole Card) x 1</li>
-                            <li>🔝 탑 캠 (Overhead) x 1</li>
-                            <li>🏃 프리 캠 (Freelance) x 1</li>
-                            <li>🖼️ 풀 샷 캠 (Full Shot) x 1</li>
-                        </ul>
-                    </div>
-                     <div>
-                        <h3 class="text-xl font-bold text-center text-gray-800 mb-4">피처 테이블 2</h3>
-                        <ul class="space-y-2 text-center text-gray-700">
-                            <li>🎥 Sony FR7 (PTZ) x 5</li>
-                            <li>🃏 보드 캠 (Hole Card) x 1</li>
-                            <li>🔝 탑 캠 (Overhead) x 1</li>
-                            <li>🏃 프리 캠 (Freelance) x 1</li>
-                            <li>🖼️ 풀 샷 캠 (Full Shot) x 1</li>
-                        </ul>
+                <p class="text-center text-gray-600 mb-8">안정적인 방송 제작을 위해 2개의 피처 테이블을 운용하며, 각 테이블은 아래와 같이 9대의 카메라로 구성됩니다. (총 18대)</p>
+                
+                <div class="flex justify-center border-b border-gray-200 mb-8">
+                    <button id="tab-table1" class="tab-btn active">테이블 1 (Green)</button>
+                    <button id="tab-table2" class="tab-btn">테이블 2 (Blue)</button>
+                </div>
+
+                <div id="tab-panel-table1" class="tab-panel">
+                    <div class="relative max-w-4xl mx-auto aspect-[16/9] flex items-center justify-center p-4 sm:p-8">
+                        <div class="absolute w-full h-full flex items-center justify-center">
+                             <div class="w-[60%] h-[55%] bg-green-800 border-8 border-yellow-800 rounded-[50%] flex items-center justify-center text-white font-bold relative">
+                                <div class="absolute bottom-2 bg-slate-900 px-4 py-1 rounded-md text-sm shadow-lg">Dealer</div>
+                                 <div class="absolute text-center">
+                                     <div class="flex items-center gap-1 text-sm">🔝<span class="hidden sm:inline">탑 캠</span></div>
+                                     <div class="flex items-center gap-1 text-sm">🃏<span class="hidden sm:inline">보드 캠</span></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="absolute top-[20%] left-[5%] text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">🎥</div><span class="text-xs font-semibold">FR7 #5</span></div>
+                        <div class="absolute top-[55%] left-0 text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">🎥</div><span class="text-xs font-semibold">FR7 #4</span></div>
+                        <div class="absolute bottom-[5%] left-[15%] text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">🎥</div><span class="text-xs font-semibold">FR7 #3</span></div>
+                        <div class="absolute bottom-[5%] right-[15%] text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">🎥</div><span class="text-xs font-semibold">FR7 #2</span></div>
+                        <div class="absolute top-[55%] right-0 text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">🎥</div><span class="text-xs font-semibold">FR7 #1</span></div>
+                        <div class="absolute top-0 right-[20%] text-center camera-icon"><div class="text-2xl sm:text-4xl text-green-500">🎥</div><span class="text-xs font-semibold">Free Cam</span></div>
+                        <div class="absolute bottom-0 left-[35%] text-center camera-icon"><div class="text-2xl sm:text-4xl text-purple-500">🎥</div><span class="text-xs font-semibold">Full Shot</span></div>
                     </div>
                 </div>
+
+                <div id="tab-panel-table2" class="tab-panel hidden">
+                    <div class="relative max-w-4xl mx-auto aspect-[16/9] flex items-center justify-center p-4 sm:p-8">
+                        <div class="absolute w-full h-full flex items-center justify-center">
+                             <div class="w-[60%] h-[55%] bg-blue-800 border-8 border-yellow-800 rounded-[50%] flex items-center justify-center text-white font-bold relative">
+                                <div class="absolute bottom-2 bg-slate-900 px-4 py-1 rounded-md text-sm shadow-lg">Dealer</div>
+                                 <div class="absolute text-center">
+                                     <div class="flex items-center gap-1 text-sm">🔝<span class="hidden sm:inline">탑 캠</span></div>
+                                     <div class="flex items-center gap-1 text-sm">🃏<span class="hidden sm:inline">보드 캠</span></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="absolute top-[20%] left-[5%] text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">🎥</div><span class="text-xs font-semibold">FR7 #5</span></div>
+                        <div class="absolute top-[55%] left-0 text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">🎥</div><span class="text-xs font-semibold">FR7 #4</span></div>
+                        <div class="absolute bottom-[5%] left-[15%] text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">🎥</div><span class="text-xs font-semibold">FR7 #3</span></div>
+                        <div class="absolute bottom-[5%] right-[15%] text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">🎥</div><span class="text-xs font-semibold">FR7 #2</span></div>
+                        <div class="absolute top-[55%] right-0 text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">🎥</div><span class="text-xs font-semibold">FR7 #1</span></div>
+                        <div class="absolute top-0 right-[20%] text-center camera-icon"><div class="text-2xl sm:text-4xl text-green-500">🎥</div><span class="text-xs font-semibold">Free Cam</span></div>
+                        <div class="absolute bottom-0 left-[35%] text-center camera-icon"><div class="text-2xl sm:text-4xl text-purple-500">🎥</div><span class="text-xs font-semibold">Full Shot</span></div>
+                    </div>
+                </div>
+
+                 <ul class="mt-8 text-center text-gray-700 grid grid-cols-2 sm:grid-cols-3 gap-2 max-w-3xl mx-auto">
+                    <li>🎥 Sony FR7 (PTZ) x 5</li>
+                    <li>🃏 보드 캠 (Hole Card) x 1</li>
+                    <li>🔝 탑 캠 (Overhead) x 1</li>
+                    <li>🏃 프리 캠 (Freelance) x 1</li>
+                    <li>🖼️ 풀 샷 캠 (Full Shot) x 1</li>
+                    <li class="font-bold col-span-full sm:col-auto">총 9대 / 테이블</li>
+                </ul>
             </div>
         </section>
         
         <section id="roadmap" class="mb-20">
             <h2 class="section-title text-3xl font-bold text-gray-900 mb-12 text-center">프로젝트 로드맵</h2>
             <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
-                 <div class="flex flex-wrap justify-center gap-2 mb-6">
+                 <div class="flex flex-wrap justify-center gap-2 mb-6 border-b pb-4">
+                    <p class="w-full text-center text-sm font-semibold text-gray-500 mb-2">단계별 보기</p>
                     <button id="filter-all" class="btn btn-primary px-4 py-2 rounded-full">전체</button>
                     <button id="filter-phase1" class="btn btn-secondary px-4 py-2 rounded-full">1단계: 분석/기획</button>
                     <button id="filter-phase2" class="btn btn-secondary px-4 py-2 rounded-full">2단계: R&D</button>
                     <button id="filter-phase3" class="btn btn-secondary px-4 py-2 rounded-full">3단계: 리허설</button>
+                </div>
+                 <div class="flex flex-wrap justify-center gap-2 mb-6">
+                    <p class="w-full text-center text-sm font-semibold text-gray-500 mb-2">팀원별 보기</p>
+                    <button id="filter-aiden" class="btn btn-secondary px-4 py-2 rounded-full">👑 Aiden</button>
+                    <button id="filter-kai" class="btn btn-secondary px-4 py-2 rounded-full">🎨 Kai</button>
+                    <button id="filter-matthew" class="btn btn-secondary px-4 py-2 rounded-full">🛠️ Matthew</button>
+                    <button id="filter-trey" class="btn btn-secondary px-4 py-2 rounded-full">🕹️ Trey</button>
                 </div>
                 <div class="chart-container">
                     <canvas id="ganttChart"></canvas>
@@ -286,19 +342,22 @@
                     { phase: 3, label: '3단계: 사전 리허설 및 최종 준비', start: 11, end: 15, color: 'rgba(22, 163, 74, 0.7)'}
                 ],
                 tasks: [
-                    { phase: 1, label: '킥오프 및 분석', start: 0, end: 0, color: 'rgba(120, 81, 169, 0.5)'},
-                    { phase: 1, label: '18캠 운용 전략 수립', start: 1, end: 1, color: 'rgba(120, 81, 169, 0.5)'},
-                    { phase: 1, label: 'A컷 스타일가이드 V0.1', start: 2, end: 2, color: 'rgba(120, 81, 169, 0.5)'},
-                    { phase: 2, label: 'R&D: 구도/앵글', start: 3, end: 3, color: 'rgba(217, 119, 6, 0.5)'},
-                    { phase: 2, label: 'R&D: 조명', start: 4, end: 5, color: 'rgba(217, 119, 6, 0.5)'},
-                    { phase: 2, label: 'R&D: 색감/톤앤매너', start: 6, end: 7, color: 'rgba(217, 119, 6, 0.5)'},
-                    { phase: 2, label: 'R&D: 배경/DoF', start: 8, end: 8, color: 'rgba(217, 119, 6, 0.5)'},
-                    { phase: 2, label: 'R&D: "킥 엣지" 디자인', start: 9, end: 9, color: 'rgba(217, 119, 6, 0.5)'},
-                    { phase: 2, label: '기술 통합 및 최종 점검', start: 10, end: 10, color: 'rgba(217, 119, 6, 0.5)'},
-                    { phase: 3, label: '1차 리허설 (기술)', start: 11, end: 11, color: 'rgba(22, 163, 74, 0.5)'},
-                    { phase: 3, label: '2차 리허설 (연출)', start: 12, end: 12, color: 'rgba(22, 163, 74, 0.5)'},
-                    { phase: 3, label: '3차 리허설 (실전)', start: 13, end: 13, color: 'rgba(22, 163, 74, 0.5)'},
-                    { phase: 3, label: '최종 장비 패킹/출국 준비', start: 14, end: 15, color: 'rgba(225, 29, 72, 0.5)'},
+                    { phase: 1, label: '킥오프 및 분석', member: 'aiden', start: 0, end: 0, color: 'rgba(217, 119, 6, 0.5)' },
+                    { phase: 1, label: '18캠 운용 전략 수립', member: 'matthew', start: 1, end: 1, color: 'rgba(22, 163, 74, 0.5)' },
+                    { phase: 1, label: 'A컷 스타일가이드 V0.1', member: 'kai', start: 2, end: 2, color: 'rgba(59, 130, 246, 0.5)' },
+                    { phase: 1, label: '신규 스위처 설계', member: 'trey', start: 2, end: 3, color: 'rgba(120, 81, 169, 0.5)' },
+                    { phase: 2, label: 'R&D: 구도/앵글', member: 'kai', start: 3, end: 3, color: 'rgba(59, 130, 246, 0.5)' },
+                    { phase: 2, label: 'R&D: 조명', member: 'matthew', start: 4, end: 5, color: 'rgba(22, 163, 74, 0.5)' },
+                    { phase: 2, label: 'R&D: 색감/톤앤매너', member: 'kai', start: 6, end: 7, color: 'rgba(59, 130, 246, 0.5)' },
+                    { phase: 2, label: 'R&D: 배경/DoF', member: 'kai', start: 8, end: 8, color: 'rgba(59, 130, 246, 0.5)' },
+                    { phase: 2, label: 'R&D: "킥 엣지" 디자인', member: 'aiden', start: 9, end: 9, color: 'rgba(217, 119, 6, 0.5)' },
+                    { phase: 2, label: '신규 스위처 개발', member: 'trey', start: 4, end: 9, color: 'rgba(120, 81, 169, 0.5)' },
+                    { phase: 2, label: '기술 통합 및 최종 점검', member: 'aiden', start: 10, end: 10, color: 'rgba(217, 119, 6, 0.5)' },
+                    { phase: 3, label: '1차 리허설 (기술)', member: 'matthew', start: 11, end: 11, color: 'rgba(22, 163, 74, 0.5)' },
+                    { phase: 3, label: '2차 리허설 (연출)', member: 'aiden', start: 12, end: 12, color: 'rgba(217, 119, 6, 0.5)' },
+                    { phase: 3, label: '3차 리허설 (실전)', member: 'aiden', start: 13, end: 13, color: 'rgba(217, 119, 6, 0.5)' },
+                    { phase: 3, label: '스위처 통합 테스트', member: 'trey', start: 11, end: 13, color: 'rgba(120, 81, 169, 0.5)' },
+                    { phase: 3, label: '최종 장비 패킹/출국 준비', member: 'matthew', start: 14, end: 15, color: 'rgba(225, 29, 72, 0.5)' },
                 ]
             };
 
@@ -322,6 +381,7 @@
                                 label: function(context) {
                                     const startWeek = weekLabels[context.raw[0]];
                                     const endWeek = weekLabels[context.raw[1] -1];
+                                    if(!startWeek || !endWeek) return '';
                                     if(startWeek === endWeek) return `${context.chart.data.labels[context.dataIndex]}: ${startWeek}`;
                                     return `${context.chart.data.labels[context.dataIndex]}: ${startWeek} ~ ${endWeek}`;
                                 }
@@ -377,11 +437,15 @@
 
             function updateChart(filter) {
                 let filteredData;
-                if (filter === 'all') {
-                    filteredData = [...timelineData.all, ...timelineData.tasks].sort((a,b) => a.start - b.start);
-                } else {
-                    const phaseFilter = parseInt(filter.replace('phase', ''));
-                    filteredData = timelineData.tasks.filter(task => task.phase === phaseFilter);
+                if (filter === 'all' || filter.startsWith('phase')) {
+                    if (filter === 'all') {
+                        filteredData = [...timelineData.all, ...timelineData.tasks].sort((a,b) => a.start - b.start);
+                    } else {
+                        const phaseFilter = parseInt(filter.replace('phase', ''));
+                        filteredData = timelineData.tasks.filter(task => task.phase === phaseFilter);
+                    }
+                } else { // Filter by member
+                    filteredData = timelineData.tasks.filter(task => task.member === filter);
                 }
 
                 ganttChart.data.labels = filteredData.map(d => d.label);
@@ -398,11 +462,13 @@
                 document.getElementById(`filter-${filter}`).classList.add('active', 'btn-primary');
                 document.getElementById(`filter-${filter}`).classList.remove('btn-secondary');
             }
-
-            document.getElementById('filter-all').addEventListener('click', () => updateChart('all'));
-            document.getElementById('filter-phase1').addEventListener('click', () => updateChart('phase1'));
-            document.getElementById('filter-phase2').addEventListener('click', () => updateChart('phase2'));
-            document.getElementById('filter-phase3').addEventListener('click', () => updateChart('phase3'));
+            
+            const roadmapFilters = document.getElementById('roadmap');
+            roadmapFilters.addEventListener('click', (e) => {
+                if (e.target.tagName !== 'BUTTON') return;
+                const filterId = e.target.id.replace('filter-', '');
+                updateChart(filterId);
+            });
 
             updateChart('all');
             
@@ -433,6 +499,25 @@
                         behavior: 'smooth'
                     });
                 });
+            });
+
+            const tabBtn1 = document.getElementById('tab-table1');
+            const tabBtn2 = document.getElementById('tab-table2');
+            const tabPanel1 = document.getElementById('tab-panel-table1');
+            const tabPanel2 = document.getElementById('tab-panel-table2');
+
+            tabBtn1.addEventListener('click', () => {
+                tabPanel1.classList.remove('hidden');
+                tabPanel2.classList.add('hidden');
+                tabBtn1.classList.add('active');
+                tabBtn2.classList.remove('active');
+            });
+            
+            tabBtn2.addEventListener('click', () => {
+                tabPanel2.classList.remove('hidden');
+                tabPanel1.classList.add('hidden');
+                tabBtn2.classList.add('active');
+                tabBtn1.classList.remove('active');
             });
         });
     </script>
