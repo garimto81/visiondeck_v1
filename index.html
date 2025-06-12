@@ -15,27 +15,16 @@
     <script src="https://cdn.jsdelivr.net/npm/date-fns"></script>
 
     <script type="module">
-      // Import the functions you need from the SDKs you need
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-      import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
-      // TODO: Add SDKs for Firebase products that you want to use
-      // https://firebase.google.com/docs/web/setup#available-libraries
-    
-      // Your web app's Firebase configuration
-      // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-      const firebaseConfig = {
-        apiKey: "AIzaSyBqJL9rF1UFH2F9glfYQixAiOMxD0aooPg",
-        authDomain: "ggp-camera-plan.firebaseapp.com",
-        projectId: "ggp-camera-plan",
-        storageBucket: "ggp-camera-plan.firebasestorage.app",
-        messagingSenderId: "108052983282",
-        appId: "1:108052983282:web:39f8b769a628f81c7d8f6b",
-        measurementId: "G-M2NDS5T0GF"
-      };
-    
-      // Initialize Firebase
-      const app = initializeApp(firebaseConfig);
-      const analytics = getAnalytics(app);
+        // Firebase SDK imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, addDoc, doc, setDoc, deleteDoc, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+        
+        // Make Firebase functions globally available for the main script
+        window.firebase = {
+            initializeApp, getAuth, signInAnonymously, 
+            getFirestore, collection, onSnapshot, addDoc, doc, setDoc, deleteDoc, getDocs, writeBatch
+        };
     </script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -172,7 +161,7 @@
                         <li>📹 보드 캠 (FR7) x 1</li>
                         <li>📷 탑 캠 (Overhead) x 1</li>
                         <li>🎥 프리 캠 (Freelance) x 1</li>
-                        <li>� 풀 샷 캠 (Full Shot) x 1</li>
+                        <li>🎥 풀 샷 캠 (Full Shot) x 1</li>
                         <li class="font-bold col-span-full sm:col-auto">총 8대 / 테이블</li>
                     </ul>
                 </div>
@@ -324,502 +313,394 @@
 
 
     <script type="module">
-        const { initializeApp } = window.firebase;
-        const { getAuth, signInAnonymously, signInWithCustomToken } = window.firebase;
+        const { initializeApp, getApps, getApp } = window.firebase;
+        const { getAuth, signInAnonymously } = window.firebase;
         const { getFirestore, collection, onSnapshot, addDoc, doc, setDoc, deleteDoc, getDocs, writeBatch } = window.firebase;
-
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        let db, auth, userId, taskCollection;
-        let allTasks = [];
-        let currentFilter = 'all';
-        let ganttChart;
-        let isInitialDataSeeded = false;
-
-        const teamData = [
-            { id: 'aiden', name: 'Aiden Kim', role: '파트 리더', emoji: '👑', color: 'rgba(217, 119, 6, 0.7)', 
-              pre_tasks: [
-                'A컷 품질 향상 목표 설정 및 팀 비전 제시', 'A컷 스타일 가이드 최종 제안', '팀원 R&D 방향 설정 및 성과 관리', '리허설 시나리오 설계 및 총괄 지휘'
-              ],
-              prod_tasks: [
-                '현장 카메라 디렉팅 총괄', '"킥 엣지" 특별 숏 시퀀스 창의적 연출 담당', '최종 의사결정 및 현장 문제 해결'
-              ]
-            },
-            { id: 'kai', name: 'Kai Kim', role: '카메라 감독', emoji: '🎨', color: 'rgba(59, 130, 246, 0.7)',
-              pre_tasks: [
-                'A컷 미학적 요소 (구도, 앵글) R&D 주도', 'A컷 스타일 가이드 시각적 레퍼런스 제작', '6GHz 무선 시스템 등 전체 방송 장비 테스트/관리', '리허설 시 미학/연출 점검'
-              ],
-              prod_tasks: [
-                '프리캠(2인) 총괄 디렉팅 및 A컷 품질 책임', '현장 A컷 품질 실시간 관리', '"킥 엣지" 시퀀스 실행 감독'
-              ]
-            },
-            { id: 'matthew', name: 'Matthew Kim', role: '기술/장비 감독', emoji: '🛠️', color: 'rgba(22, 163, 74, 0.7)',
-               pre_tasks: [
-                '18캠 시스템 최적화 및 A컷 구현 설정 확보', '조명/렌즈 등 기술 요소 R&D 및 최적 조합 연구', '사이프러스 물류/운송 계획 수립', '리허설 시 기술 지원 및 시스템 안정성 점검'
-              ],
-              prod_tasks: [
-                '현장 장비 설치, 운영, 철수 총괄', '실시간 기술 문제 해결 및 장비 트러블슈팅', '데이터 관리 및 백업 총괄'
-              ]
-            },
-            { id: 'trey', name: 'Trey Song', role: '스위처 시스템 개발 / 운용', emoji: '🕹️', color: 'rgba(120, 81, 169, 0.7)',
-              pre_tasks: [
-                '플레이어 액션 기반 신규 스위처 시스템 개발', '휴먼 에러 최소화를 위한 스위칭 로직 구현', '포커 도메인 분석을 통한 "킥 엣지" 발생 예측 모델 연구', 'GFX/아카이빙 시스템 설계 및 연동 테스트', '리허설 시 스위처 통합 테스트'
-              ],
-              prod_tasks: [
-                '메인 스위처 실시간 운용', '카메라 콜 및 GFX 연동 실행', '방송 영상 실시간 아카이빙 관리'
-              ]
-            }
-        ];
-
-        const memberColorMap = teamData.reduce((acc, member) => { acc[member.id] = member.color; return acc; }, {});
-        const memberEmojiMap = teamData.reduce((acc, member) => { acc[member.id] = member.emoji; return acc; }, {});
-
-        const weekLabels = [
-            '6월 W2','6월 W3','6월 W4', // 0,1,2
-            '7월 W1','7월 W2','7월 W3','7월 W4', // 3,4,5,6
-            '8월 W1','8월 W2','8월 W3','8월 W4', // 7,8,9,10
-            '9월 W1','9월 W2','9월 W3','9월 W4', // 11,12,13,14
-            '10월 W1' // 15
-        ];
-        
-        const projectStartDate = new Date('2025-06-09');
-        function dateToWeekIndex(dateStr) {
-            if (!dateStr) return 0;
-            const targetDate = new Date(dateStr);
-            const diffTime = targetDate - projectStartDate;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            return Math.floor(diffDays / 7);
-        }
-
-        const initialTasks = [
-                { phase: '1', label: '프로젝트 총괄 기획', member: 'aiden', startDate: '2025-06-11', endDate: '2025-06-28'},
-                { phase: '1', label: '5월 MPP 분석 및 레퍼런스 수집', member: 'kai', startDate: '2025-06-11', endDate: '2025-06-21'},
-                { phase: '1', label: 'A컷 스타일가이드 V0.1', member: 'kai', startDate: '2025-06-24', endDate: '2025-06-28'},
-                { phase: '1', label: '18캠 시스템 구성/요구사항 정의', member: 'matthew', startDate: '2025-06-11', endDate: '2025-06-21'},
-                { phase: '1', label: '6GHz 시스템 리서치/준비', member: 'matthew', startDate: '2025-06-24', endDate: '2025-07-05'},
-                { phase: '2', label: '신규 스위처 분석/설계', member: 'trey', startDate: '2025-08-05', endDate: '2025-08-16'},
-                { phase: '2', label: '팀 R&D 진행상황 점검/피드백', member: 'aiden', startDate: '2025-07-01', endDate: '2025-08-16'},
-                { phase: '2', label: 'R&D: "킥 엣지" 디자인', member: 'aiden', startDate: '2025-08-19', endDate: '2025-08-23'},
-                { phase: '2', label: '기술 통합 및 최종 점검', member: 'aiden', startDate: '2025-08-26', endDate: '2025-08-30'},
-                { phase: '2', label: 'R&D: 구도/앵글 심화', member: 'kai', startDate: '2025-07-01', endDate: '2025-07-12'},
-                { phase: '2', label: 'R&D: 색감/톤앤매너', member: 'kai', startDate: '2025-07-15', endDate: '2025-07-26'},
-                { phase: '2', label: 'R&D: 배경/DoF 및 6GHz 테스트', member: 'kai', startDate: '2025-07-29', endDate: '2025-08-16'},
-                { phase: '2', label: 'A컷 스타일가이드 V1.0 최종화', member: 'kai', startDate: '2025-08-19', endDate: '2025-08-30'},
-                { phase: '2', label: 'R&D: 조명 시스템 설계', member: 'matthew', startDate: '2025-07-08', endDate: '2025-07-19'},
-                { phase: '2', label: 'FR7 및 고정캠 최적화 R&D', member: 'matthew', startDate: '2025-07-22', endDate: '2025-08-02'},
-                { phase: '2', label: '사이프러스 물류/운송 계획', member: 'matthew', startDate: '2025-08-05', endDate: '2025-08-30'},
-                { phase: '2', label: '스위처 개발 및 GFX/아카이빙 연동', member: 'trey', startDate: '2025-08-19', endDate: '2025-08-30'},
-                { phase: '3', label: '리허설 총괄', member: 'aiden', startDate: '2025-09-02', endDate: '2025-09-27'},
-                { phase: '3', label: '리허설 (미학/연출 점검)', member: 'kai', startDate: '2025-09-02', endDate: '2025-09-27'},
-                { phase: '3', label: '리허설 (기술 지원)', member: 'matthew', startDate: '2025-09-02', endDate: '2025-09-27'},
-                { phase: '3', label: '리허설 (스위처 통합 테스트)', member: 'trey', startDate: '2025-09-02', endDate: '2025-09-27'},
-                { phase: '4', label: '최종 패킹 및 출국 준비', member: 'aiden', startDate: '2025-09-30', endDate: '2025-10-04'},
-                { phase: '4', label: '최종 패킹 및 출국 준비', member: 'kai', startDate: '2025-09-30', endDate: '2025-10-04'},
-                { phase: '4', label: '최종 패킹 및 출국 준비', member: 'matthew', startDate: '2025-09-30', endDate: '2025-10-04'},
-                { phase: '4', label: '최종 패킹 및 출국 준비', member: 'trey', startDate: '2025-09-30', endDate: '2025-10-04'},
-        ].map(task => ({ ...task, start: dateToWeekIndex(task.startDate), end: dateToWeekIndex(task.endDate) }));
-
-        function updateChart(filter) {
-            currentFilter = filter;
-            let filteredTasks;
-            if (filter === 'all' || filter.startsWith('phase')) {
-                if (filter === 'all') {
-                    filteredTasks = allTasks.sort((a,b) => a.start - b.start);
-                } else {
-                    const phaseFilter = filter.replace('phase', '');
-                    filteredTasks = allTasks.filter(task => task.phase === phaseFilter);
-                }
-            } else { 
-                filteredTasks = allTasks.filter(task => task.member === filter);
-            }
-
-            ganttChart.data.labels = filteredTasks.map(d => `${memberEmojiMap[d.member]} ${d.label}`);
-            ganttChart.data.datasets = [{
-                data: filteredTasks.map(d => [d.start, d.end + 1]),
-                backgroundColor: filteredTasks.map(d => memberColorMap[d.member] || d.color),
-                barPercentage: 0.6, borderRadius: 4
-            }];
-            ganttChart.update();
-
-            document.querySelectorAll('#roadmap .btn').forEach(b => {
-                b.classList.remove('active', 'btn-primary');
-                b.classList.add('btn-secondary');
-            });
-            document.getElementById(`filter-${filter}`).classList.add('active', 'btn-primary');
-            document.getElementById(`filter-${filter}`).classList.remove('btn-secondary');
-        }
-        
-        async function initFirebase() {
-            try {
-                const firebaseConfig = JSON.parse(__firebase_config);
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-                userId = auth.currentUser?.uid;
-                
-                taskCollection = collection(db, 'artifacts', appId, 'public', 'data', 'roadmap_tasks');
-                
-                const querySnapshot = await getDocs(taskCollection);
-                if (querySnapshot.empty) {
-                    const batch = writeBatch(db);
-                    initialTasks.forEach(task => {
-                        const newDocRef = doc(taskCollection);
-                        batch.set(newDocRef, task);
-                    });
-                    await batch.commit();
-                }
-
-                fetchTasks();
-
-            } catch (error) {
-                console.error("Firebase 초기화 오류. 정적 데이터로 대체합니다:", error);
-                allTasks = initialTasks;
-                updateChart('all');
-            }
-        }
-        
-        function fetchTasks() {
-            onSnapshot(taskCollection, (snapshot) => {
-                allTasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                updateChart(currentFilter);
-            }, (error) => {
-                console.error("데이터 가져오기 오류. 정적 데이터로 대체합니다:", error);
-                allTasks = initialTasks;
-                updateChart('all');
-            });
-        }
         
         document.addEventListener('DOMContentLoaded', () => {
-            initFirebase();
             
-            const teamCardsContainer = document.getElementById('team-cards-container');
-            const teamDetailsContainer = document.getElementById('team-details-container');
+            let db, auth, userId, taskCollection;
+            let allTasks = [];
+            let currentFilter = 'all';
+            let ganttChart;
 
-            teamData.forEach(member => {
-                const card = document.createElement('div');
-                card.className = `card p-6 rounded-xl text-center cursor-pointer member-card border-2 border-transparent`;
-                card.style.backgroundColor = member.color.replace('0.7', '0.1');
-                card.dataset.memberId = member.id;
-                card.innerHTML = `
-                    <div class="text-5xl mb-3">${member.emoji}</div>
-                    <h4 class="text-xl font-bold text-gray-800">${member.name}</h4>
-                    <p class="font-semibold" style="color: ${member.color.replace('0.7', '1')}">${member.role}</p>
-                `;
-                teamCardsContainer.appendChild(card);
-            });
+            const teamData = [
+                { id: 'aiden', name: 'Aiden Kim', role: '파트 리더', emoji: '👑', color: 'rgba(217, 119, 6, 0.7)', 
+                  pre_tasks: [ 'A컷 품질 향상 목표 설정 및 팀 비전 제시', 'A컷 스타일 가이드 최종 제안', '팀원 R&D 방향 설정 및 성과 관리', '리허설 시나리오 설계 및 총괄 지휘' ],
+                  prod_tasks: [ '현장 카메라 디렉팅 총괄', '"킥 엣지" 특별 숏 시퀀스 창의적 연출 담당', '최종 의사결정 및 현장 문제 해결' ]
+                },
+                { id: 'kai', name: 'Kai Kim', role: '카메라 감독', emoji: '�', color: 'rgba(59, 130, 246, 0.7)',
+                  pre_tasks: [ 'A컷 미학적 요소 (구도, 앵글) R&D 주도', 'A컷 스타일 가이드 시각적 레퍼런스 제작', '6GHz 무선 시스템 등 전체 방송 장비 테스트/관리', '리허설 시 미학/연출 점검' ],
+                  prod_tasks: [ '프리캠(2인) 총괄 디렉팅 및 A컷 품질 책임', '현장 A컷 품질 실시간 관리', '"킥 엣지" 시퀀스 실행 감독' ]
+                },
+                { id: 'matthew', name: 'Matthew Kim', role: '기술/장비 감독', emoji: '🛠️', color: 'rgba(22, 163, 74, 0.7)',
+                   pre_tasks: [ '18캠 시스템 최적화 및 A컷 구현 설정 확보', '조명/렌즈 등 기술 요소 R&D 및 최적 조합 연구', '사이프러스 물류/운송 계획 수립', '리허설 시 기술 지원 및 시스템 안정성 점검' ],
+                   prod_tasks: [ '현장 장비 설치, 운영, 철수 총괄', '실시간 기술 문제 해결 및 장비 트러블슈팅', '데이터 관리 및 백업 총괄' ]
+                },
+                { id: 'trey', name: 'Trey Song', role: '스위처 시스템 개발 / 운용', emoji: '🕹️', color: 'rgba(120, 81, 169, 0.7)',
+                  pre_tasks: [ '플레이어 액션 기반 신규 스위처 시스템 개발', '휴먼 에러 최소화를 위한 스위칭 로직 구현', '포커 도메인 분석을 통한 "킥 엣지" 발생 예측 모델 연구', 'GFX/아카이빙 시스템 설계 및 연동 테스트', '리허설 시 스위처 통합 테스트' ],
+                  prod_tasks: [ '메인 스위처 실시간 운용', '카메라 콜 및 GFX 연동 실행', '방송 영상 실시간 아카이빙 관리' ]
+                }
+            ];
+
+            const memberColorMap = teamData.reduce((acc, member) => { acc[member.id] = member.color; return acc; }, {});
+            const memberEmojiMap = teamData.reduce((acc, member) => { acc[member.id] = member.emoji; return acc; }, {});
             
+            const weekLabels = [ '6월 W2','6월 W3','6월 W4','7월 W1','7월 W2','7월 W3','7월 W4','8월 W1','8월 W2','8월 W3','8월 W4','9월 W1','9월 W2','9월 W3','9월 W4','10월 W1' ];
+            const projectStartDate = new Date('2025-06-09');
+
+            function dateToWeekIndex(dateStr) {
+                if (!dateStr) return 0;
+                const targetDate = new Date(dateStr);
+                const diffTime = targetDate - projectStartDate;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                return Math.floor(diffDays / 7);
+            }
+            
+            const initialTasks = [
+                    { phase: '1', label: '프로젝트 총괄 기획', member: 'aiden', startDate: '2025-06-11', endDate: '2025-06-28'}, { phase: '1', label: '5월 MPP 분석 및 레퍼런스 수집', member: 'kai', startDate: '2025-06-11', endDate: '2025-06-21'}, { phase: '1', label: 'A컷 스타일가이드 V0.1', member: 'kai', startDate: '2025-06-24', endDate: '2025-06-28'}, { phase: '1', label: '18캠 시스템 구성/요구사항 정의', member: 'matthew', startDate: '2025-06-11', endDate: '2025-06-21'}, { phase: '1', label: '6GHz 시스템 리서치/준비', member: 'matthew', startDate: '2025-06-24', endDate: '2025-07-05'}, { phase: '2', label: '신규 스위처 분석/설계', member: 'trey', startDate: '2025-08-05', endDate: '2025-08-16'}, { phase: '2', label: '팀 R&D 진행상황 점검/피드백', member: 'aiden', startDate: '2025-07-01', endDate: '2025-08-16'}, { phase: '2', label: 'R&D: "킥 엣지" 디자인', member: 'aiden', startDate: '2025-08-19', endDate: '2025-08-23'}, { phase: '2', label: '기술 통합 및 최종 점검', member: 'aiden', startDate: '2025-08-26', endDate: '2025-08-30'}, { phase: '2', label: 'R&D: 구도/앵글 심화', member: 'kai', startDate: '2025-07-01', endDate: '2025-07-12'}, { phase: '2', label: 'R&D: 색감/톤앤매너', member: 'kai', startDate: '2025-07-15', endDate: '2025-07-26'}, { phase: '2', label: 'R&D: 배경/DoF 및 6GHz 테스트', member: 'kai', startDate: '2025-07-29', endDate: '2025-08-16'}, { phase: '2', label: 'A컷 스타일가이드 V1.0 최종화', member: 'kai', startDate: '2025-08-19', endDate: '2025-08-30'}, { phase: '2', label: 'R&D: 조명 시스템 설계', member: 'matthew', startDate: '2025-07-08', endDate: '2025-07-19'}, { phase: '2', label: 'FR7 및 고정캠 최적화 R&D', member: 'matthew', startDate: '2025-07-22', endDate: '2025-08-02'}, { phase: '2', label: '사이프러스 물류/운송 계획', member: 'matthew', startDate: '2025-08-05', endDate: '2025-08-30'}, { phase: '2', label: '스위처 개발 및 GFX/아카이빙 연동', member: 'trey', startDate: '2025-08-19', endDate: '2025-08-30'}, { phase: '3', label: '리허설 총괄', member: 'aiden', startDate: '2025-09-02', endDate: '2025-09-27'}, { phase: '3', label: '리허설 (미학/연출 점검)', member: 'kai', startDate: '2025-09-02', endDate: '2025-09-27'}, { phase: '3', label: '리허설 (기술 지원)', member: 'matthew', startDate: '2025-09-02', endDate: '2025-09-27'}, { phase: '3', label: '리허설 (스위처 통합 테스트)', member: 'trey', startDate: '2025-09-02', endDate: '2025-09-27'}, { phase: '4', label: '최종 패킹 및 출국 준비', member: 'aiden', startDate: '2025-09-30', endDate: '2025-10-04'}, { phase: '4', label: '최종 패킹 및 출국 준비', member: 'kai', startDate: '2025-09-30', endDate: '2025-10-04'}, { phase: '4', label: '최종 패킹 및 출국 준비', member: 'matthew', startDate: '2025-09-30', endDate: '2025-10-04'}, { phase: '4', label: '최종 패킹 및 출국 준비', member: 'trey', startDate: '2025-09-30', endDate: '2025-10-04'},
+            ].map(task => ({ ...task, start: dateToWeekIndex(task.startDate), end: dateToWeekIndex(task.endDate) }));
+
             const ctx = document.getElementById('ganttChart').getContext('2d');
-            ganttChart = new Chart(ctx, {
+            ganttChart = new Chart(ctx, { /* ... chart options ... */ 
                 type: 'bar', data: { labels: [], datasets: [] },
-                options: {
-                    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const startWeek = weekLabels[context.raw[0]];
-                                    const endWeek = weekLabels[context.raw[1] - 1];
-                                    if(!startWeek || !endWeek) return '';
-                                    const labelText = context.chart.data.labels[context.dataIndex].substring(2);
-                                    if(startWeek === endWeek) return `${labelText}: ${startWeek}`;
-                                    return `${labelText}: ${startWeek} ~ ${endWeek}`;
-                                }
-                            }
-                        }
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false },
+                        tooltip: { callbacks: {
+                            label: function(context) { const startWeek = weekLabels[context.raw[0]]; const endWeek = weekLabels[context.raw[1] - 1]; if(!startWeek || !endWeek) return ''; const labelText = context.chart.data.labels[context.dataIndex].substring(2); if(startWeek === endWeek) return `${labelText}: ${startWeek}`; return `${labelText}: ${startWeek} ~ ${endWeek}`; }
+                        }}
                     },
-                    scales: {
-                        x: {
-                            type: 'linear', position: 'top', min: -0.5, max: weekLabels.length - 0.5,
-                            ticks: {
-                                stepSize: 1,
-                                callback: function(value, index, ticks) {
-                                     if (index >= weekLabels.length) return '';
-                                    const currentMonth = weekLabels[index].split(' ')[0];
-                                    const prevMonth = index > 0 ? weekLabels[index - 1].split(' ')[0] : '';
-                                    if (currentMonth !== prevMonth) return currentMonth;
-                                    return '';
-                                }
-                            },
-                             grid: { drawOnChartArea: false }
+                    scales: { x: { type: 'linear', position: 'top', min: -0.5, max: weekLabels.length - 0.5,
+                            ticks: { stepSize: 1, callback: function(value, index) { if (index >= weekLabels.length) return ''; const currentMonth = weekLabels[index].split(' ')[0]; const prevMonth = index > 0 ? weekLabels[index - 1].split(' ')[0] : ''; if (currentMonth !== prevMonth) return currentMonth; return ''; }},
+                            grid: { drawOnChartArea: false }
                         },
-                        xAxis2: {
-                            type: 'linear', position: 'top', min: -0.5, max: weekLabels.length - 0.5,
-                            ticks: {
-                                 stepSize: 1,
-                                callback: function(value, index, ticks) {
-                                    const label = weekLabels[index] || '';
-                                    return label.split(' ')[1] || '';
-                                }
-                            },
+                        xAxis2: { type: 'linear', position: 'top', min: -0.5, max: weekLabels.length - 0.5,
+                            ticks: { stepSize: 1, callback: function(value, index) { const label = weekLabels[index] || ''; return label.split(' ')[1] || ''; }},
                             grid: { color: 'rgba(0,0,0,0.05)' }
                         },
                         y: { grid: { display: false } }
                     }
                 }
             });
-
-            const roadmapFilters = document.getElementById('roadmap');
-            roadmapFilters.addEventListener('click', (e) => {
-                if (e.target.tagName !== 'BUTTON') return;
-                const filterId = e.target.id.replace('filter-', '');
-                updateChart(filterId);
-            });
-
-            // Modal and Form Logic
-            const modal = document.getElementById('task-modal');
-            const addTaskBtn = document.getElementById('add-task-btn');
-            const closeModalBtn = document.getElementById('close-modal-btn');
-            const taskForm = document.getElementById('task-form');
-            const memberSelect = document.getElementById('task-member');
-            const deleteTaskBtn = document.getElementById('delete-task-btn');
-
-            teamData.forEach(member => {
-                const option = document.createElement('option');
-                option.value = member.id;
-                option.textContent = `${member.emoji} ${member.name}`;
-                memberSelect.appendChild(option);
-            });
-
-            const showModal = (task = null) => {
-                taskForm.reset();
-                if (task) {
-                    document.getElementById('modal-title').textContent = '업무 수정';
-                    document.getElementById('task-id').value = task.id;
-                    document.getElementById('task-label').value = task.label;
-                    document.getElementById('task-member').value = task.member;
-                    document.getElementById('task-start').value = task.startDate;
-                    document.getElementById('task-end').value = task.endDate;
-                    document.getElementById('task-phase').value = task.phase;
-                    deleteTaskBtn.classList.remove('hidden');
-                } else {
-                    document.getElementById('modal-title').textContent = '업무 추가';
-                    document.getElementById('task-id').value = '';
-                    deleteTaskBtn.classList.add('hidden');
-                }
-                modal.classList.remove('hidden');
-            };
-
-            const hideModal = () => modal.classList.add('hidden');
             
-            addTaskBtn.addEventListener('click', () => showModal());
-            closeModalBtn.addEventListener('click', hideModal);
+            function updateChart(filter) {
+                currentFilter = filter;
+                let filteredTasks;
+                if (filter === 'all' || filter.startsWith('phase')) {
+                    if (filter === 'all') { filteredTasks = allTasks.sort((a,b) => a.start - b.start); } 
+                    else { const phaseFilter = filter.replace('phase', ''); filteredTasks = allTasks.filter(task => task.phase === phaseFilter); }
+                } else { filteredTasks = allTasks.filter(task => task.member === filter); }
 
-            taskForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const id = document.getElementById('task-id').value;
-                const startDate = document.getElementById('task-start').value;
-                const endDate = document.getElementById('task-end').value;
+                ganttChart.data.labels = filteredTasks.map(d => `${memberEmojiMap[d.member]} ${d.label}`);
+                ganttChart.data.datasets = [{ data: filteredTasks.map(d => [d.start, d.end + 1]), backgroundColor: filteredTasks.map(d => memberColorMap[d.member] || 'gray'), barPercentage: 0.6, borderRadius: 4 }];
+                ganttChart.update();
 
-                const taskData = {
-                    label: document.getElementById('task-label').value,
-                    member: document.getElementById('task-member').value,
-                    phase: document.getElementById('task-phase').value,
-                    startDate: startDate,
-                    endDate: endDate,
-                    start: dateToWeekIndex(startDate),
-                    end: dateToWeekIndex(endDate),
-                };
-
+                document.querySelectorAll('#roadmap .btn').forEach(b => { b.classList.remove('active', 'btn-primary'); b.classList.add('btn-secondary'); });
+                document.getElementById(`filter-${filter}`).classList.add('active', 'btn-primary');
+                document.getElementById(`filter-${filter}`).classList.remove('btn-secondary');
+            }
+            
+            async function initApp() {
                 try {
-                    if (id) {
-                        await setDoc(doc(taskCollection, id), taskData);
-                    } else {
-                        await addDoc(taskCollection, taskData);
+                    const firebaseConfig = { apiKey: "AIzaSyBqJL9rF1UFH2F9glfYQixAiOMxD0aooPg", authDomain: "ggp-camera-plan.firebaseapp.com", projectId: "ggp-camera-plan", storageBucket: "ggp-camera-plan.appspot.com", messagingSenderId: "108052983282", appId: "1:108052983282:web:39f8b769a628f81c7d8f6b", measurementId: "G-M2NDS5T0GF" };
+                    const app = initializeApp(firebaseConfig);
+                    db = getFirestore(app);
+                    auth = getAuth(app);
+                    await signInAnonymously(auth);
+                    userId = auth.currentUser?.uid;
+                    
+                    taskCollection = collection(db, "roadmap_tasks");
+                    
+                    const querySnapshot = await getDocs(taskCollection);
+                    if (querySnapshot.empty) {
+                        const batch = writeBatch(db);
+                        initialTasks.forEach(task => {
+                            const newDocRef = doc(taskCollection);
+                            batch.set(newDocRef, task);
+                        });
+                        await batch.commit();
                     }
-                    hideModal();
-                } catch(error) {
-                    console.error("저장 오류:", error);
+
+                    onSnapshot(taskCollection, (snapshot) => {
+                        allTasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        updateChart(currentFilter);
+                    }, (error) => {
+                        console.error("데이터 가져오기 오류:", error);
+                        allTasks = initialTasks;
+                        updateChart('all');
+                    });
+
+                } catch (error) {
+                    console.error("Firebase 초기화 오류:", error);
+                    allTasks = initialTasks;
+                    updateChart('all');
                 }
-            });
 
-            deleteTaskBtn.addEventListener('click', async () => {
-                const id = document.getElementById('task-id').value;
-                if(id && confirm('이 업무를 정말 삭제하시겠습니까?')) {
-                     try {
-                        await deleteDoc(doc(taskCollection, id));
-                        hideModal();
-                    } catch(error) {
-                        console.error("삭제 오류:", error);
-                    }
-                }
-            });
-
-            ganttChart.canvas.onclick = (evt) => {
-                const points = ganttChart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, true);
-                if (points.length) {
-                    const firstPoint = points[0];
-                    const label = ganttChart.data.labels[firstPoint.index];
-                    const taskToEdit = allTasks.find(t => `${memberEmojiMap[t.member]} ${t.label}` === label);
-                    if (taskToEdit) {
-                        showModal(taskToEdit);
-                    }
-                }
-            };
-            
-            // Tab switching logic for Setup Section
-            const setupTabContainer = document.querySelector('#setup .flex.justify-center');
-            const setupPanels = document.querySelectorAll('#setup .tab-panel');
-
-            setupTabContainer.addEventListener('click', (e) => {
-                if (e.target.tagName !== 'BUTTON') return;
-                
-                setupTabContainer.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-                setupPanels.forEach(panel => panel.classList.add('hidden'));
-
-                e.target.classList.add('active');
-                if (e.target.id === 'tab-may-initial') {
-                    document.getElementById('tab-panel-may-initial').classList.remove('hidden');
-                } else if (e.target.id === 'tab-may-final') {
-                    document.getElementById('tab-panel-may-final').classList.remove('hidden');
-                } else if (e.target.id === 'tab-oct') {
-                    document.getElementById('tab-panel-oct').classList.remove('hidden');
-                }
-            });
-
-
-             const navLinks = document.querySelectorAll('.nav-link');
-            const sections = document.querySelectorAll('main section');
-
-            window.addEventListener('scroll', () => {
-                let current = '';
-                sections.forEach(section => {
-                    if (pageYOffset >= section.offsetTop - 80) {
-                        current = section.getAttribute('id');
-                    }
-                });
-                navLinks.forEach(link => {
-                    link.classList.remove('active');
-                    if (link.getAttribute('href').includes(current)) {
-                        link.classList.add('active');
-                    }
-                });
-            });
-
-            navLinks.forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    document.querySelector(link.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
-                });
-            });
-            
-            teamCardsContainer.addEventListener('click', (e) => {
-                const card = e.target.closest('.member-card');
-                if (!card) return;
-
-                const memberId = card.dataset.memberId;
-                const member = teamData.find(m => m.id === memberId);
-
-                document.querySelectorAll('.member-card').forEach(c => c.style.borderColor = 'transparent');
-                card.style.borderColor = member.color.replace('0.7', '1');
-                
-                teamDetailsContainer.innerHTML = `
-                    <div class="bg-white p-6 rounded-xl shadow-lg border-2" style="border-color: ${member.color.replace('0.7', '0.2')}">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <h4 class="text-lg font-bold mb-2 text-gray-800">프리 프로덕션 (준비 단계)</h4>
-                                <ul class="space-y-2 list-disc list-inside text-gray-700">
-                                   ${member.pre_tasks.map(task => `<li>${task}</li>`).join('')}
-                                </ul>
-                            </div>
-                             <div>
-                                <h4 class="text-lg font-bold mb-2 text-gray-800">프로덕션 (현장 실행)</h4>
-                                <ul class="space-y-2 list-disc list-inside text-gray-700">
-                                   ${member.prod_tasks.map(task => `<li>${task}</li>`).join('')}
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-
-            const viewPersonTab = document.getElementById('view-by-person-tab');
-            const viewPreProdTab = document.getElementById('view-by-pre-prod-tab');
-            const viewProdTab = document.getElementById('view-by-prod-tab');
-            const personPanel = document.getElementById('view-panel-person');
-            const preProdPanel = document.getElementById('view-panel-pre-prod');
-            const prodPanel = document.getElementById('view-panel-prod');
-            
-            function renderPhaseView(panel, taskType) {
-                panel.innerHTML = '';
-                teamData.forEach(member => {
-                    const memberEl = document.createElement('div');
-                    memberEl.className = 'p-4 rounded-lg';
-                    memberEl.style.backgroundColor = member.color.replace('0.7', '0.1');
-                    const tasks = member[taskType].map(task => `<li>${task}</li>`).join('');
-                    memberEl.innerHTML = `
-                         <h4 class="text-lg font-bold mb-2 flex items-center" style="color: ${member.color.replace('0.7', '1')}">
-                            <span class="text-2xl mr-2">${member.emoji}</span>
-                            ${member.name}
-                        </h4>
-                        <ul class="space-y-2 list-disc list-inside text-gray-700 pl-4">${tasks}</ul>
-                    `;
-                    panel.appendChild(memberEl);
-                });
+                // Setup non-firebase dependent parts
+                setupEventListeners();
             }
 
-            viewPersonTab.addEventListener('click', () => {
-                personPanel.classList.remove('hidden');
-                preProdPanel.classList.add('hidden');
-                prodPanel.classList.add('hidden');
-                viewPersonTab.classList.add('active');
-                viewPreProdTab.classList.remove('active');
-                viewProdTab.classList.remove('active');
-            });
-            viewPreProdTab.addEventListener('click', () => {
-                personPanel.classList.add('hidden');
-                preProdPanel.classList.remove('hidden');
-                prodPanel.classList.add('hidden');
-                viewPersonTab.classList.remove('active');
-                viewPreProdTab.classList.add('active');
-                viewProdTab.classList.remove('active');
-                renderPhaseView(preProdPanel, 'pre_tasks');
-            });
-            viewProdTab.addEventListener('click', () => {
-                personPanel.classList.add('hidden');
-                preProdPanel.classList.add('hidden');
-                prodPanel.classList.remove('hidden');
-                viewPersonTab.classList.remove('active');
-                viewPreProdTab.classList.remove('active');
-                viewProdTab.classList.add('active');
-                renderPhaseView(prodPanel, 'prod_tasks');
-            });
-            
-            // Video Modal Logic
-            const kickEdgeCard = document.querySelector('#strategy');
-            kickEdgeCard.addEventListener('click', (e) => {
-                 const button = e.target.closest('.kick-edge-ref-btn');
-                 if(button) {
-                    const videoModal = document.getElementById('video-modal');
-                    const youtubeIframe = document.getElementById('youtube-iframe');
-                    const url = button.dataset.url;
-                    youtubeIframe.src = url;
-                    videoModal.classList.remove('hidden');
-                }
-            });
-            
-            const closeVideoModalBtn = document.getElementById('close-video-modal');
-            const videoModal = document.getElementById('video-modal');
-            const youtubeIframe = document.getElementById('youtube-iframe');
+            function setupEventListeners() {
+                // All your event listeners from the original script
+                 const roadmapFilters = document.getElementById('roadmap');
+                 roadmapFilters.addEventListener('click', (e) => {
+                     if (e.target.tagName !== 'BUTTON') return;
+                     const filterId = e.target.id.replace('filter-', '');
+                     updateChart(filterId);
+                 });
+ 
+                 // Modal and Form Logic
+                 const modal = document.getElementById('task-modal');
+                 const addTaskBtn = document.getElementById('add-task-btn');
+                 const closeModalBtn = document.getElementById('close-modal-btn');
+                 const taskForm = document.getElementById('task-form');
+                 const memberSelect = document.getElementById('task-member');
+                 const deleteTaskBtn = document.getElementById('delete-task-btn');
+ 
+                 teamData.forEach(member => {
+                     const option = document.createElement('option');
+                     option.value = member.id;
+                     option.textContent = `${member.emoji} ${member.name}`;
+                     memberSelect.appendChild(option);
+                 });
+ 
+                 const showModal = (task = null) => {
+                     taskForm.reset();
+                     if (task) {
+                         document.getElementById('modal-title').textContent = '업무 수정';
+                         document.getElementById('task-id').value = task.id;
+                         document.getElementById('task-label').value = task.label;
+                         document.getElementById('task-member').value = task.member;
+                         document.getElementById('task-start').value = task.startDate;
+                         document.getElementById('task-end').value = task.endDate;
+                         document.getElementById('task-phase').value = task.phase;
+                         deleteTaskBtn.classList.remove('hidden');
+                     } else {
+                         document.getElementById('modal-title').textContent = '업무 추가';
+                         document.getElementById('task-id').value = '';
+                         deleteTaskBtn.classList.add('hidden');
+                     }
+                     modal.classList.remove('hidden');
+                 };
+ 
+                 const hideModal = () => modal.classList.add('hidden');
+                 
+                 addTaskBtn.addEventListener('click', () => showModal());
+                 closeModalBtn.addEventListener('click', hideModal);
+ 
+                 taskForm.addEventListener('submit', async (e) => {
+                     e.preventDefault();
+                     if (!taskCollection) { console.error("DB not initialized"); return; }
+                     const id = document.getElementById('task-id').value;
+                     const startDate = document.getElementById('task-start').value;
+                     const endDate = document.getElementById('task-end').value;
+ 
+                     const taskData = {
+                         label: document.getElementById('task-label').value,
+                         member: document.getElementById('task-member').value,
+                         phase: document.getElementById('task-phase').value,
+                         startDate: startDate,
+                         endDate: endDate,
+                         start: dateToWeekIndex(startDate),
+                         end: dateToWeekIndex(endDate),
+                     };
+ 
+                     try {
+                         if (id) {
+                             await setDoc(doc(taskCollection, id), taskData);
+                         } else {
+                             await addDoc(taskCollection, taskData);
+                         }
+                         hideModal();
+                     } catch(error) {
+                         console.error("저장 오류:", error);
+                     }
+                 });
+ 
+                 deleteTaskBtn.addEventListener('click', async () => {
+                     const id = document.getElementById('task-id').value;
+                     if(id && confirm('이 업무를 정말 삭제하시겠습니까?')) {
+                          try {
+                             await deleteDoc(doc(taskCollection, id));
+                             hideModal();
+                         } catch(error) {
+                             console.error("삭제 오류:", error);
+                         }
+                     }
+                 });
+ 
+                 ganttChart.canvas.onclick = (evt) => {
+                     const points = ganttChart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, true);
+                     if (points.length) {
+                         const firstPoint = points[0];
+                         const label = ganttChart.data.labels[firstPoint.index];
+                         const taskToEdit = allTasks.find(t => `${memberEmojiMap[t.member]} ${t.label}` === label);
+                         if (taskToEdit) {
+                             showModal(taskToEdit);
+                         }
+                     }
+                 };
+                 
+                 const setupTabContainer = document.querySelector('#setup .flex.justify-center');
+                 const setupPanels = document.querySelectorAll('#setup .tab-panel');
+ 
+                 setupTabContainer.addEventListener('click', (e) => {
+                     if (e.target.tagName !== 'BUTTON') return;
+                     
+                     setupTabContainer.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                     setupPanels.forEach(panel => panel.classList.add('hidden'));
+ 
+                     e.target.classList.add('active');
+                     if (e.target.id === 'tab-may-initial') {
+                         document.getElementById('tab-panel-may-initial').classList.remove('hidden');
+                     } else if (e.target.id === 'tab-may-final') {
+                         document.getElementById('tab-panel-may-final').classList.remove('hidden');
+                     } else if (e.target.id === 'tab-oct') {
+                         document.getElementById('tab-panel-oct').classList.remove('hidden');
+                     }
+                 });
+ 
+                  const navLinks = document.querySelectorAll('.nav-link');
+                 const sections = document.querySelectorAll('main section');
+ 
+                 window.addEventListener('scroll', () => {
+                     let current = '';
+                     sections.forEach(section => {
+                         if (pageYOffset >= section.offsetTop - 80) {
+                             current = section.getAttribute('id');
+                         }
+                     });
+                     navLinks.forEach(link => {
+                         link.classList.remove('active');
+                         if (link.getAttribute('href').includes(current)) {
+                             link.classList.add('active');
+                         }
+                     });
+                 });
+ 
+                 navLinks.forEach(link => {
+                     link.addEventListener('click', (e) => {
+                         e.preventDefault();
+                         document.querySelector(link.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
+                     });
+                 });
+                 
+                 const teamCardsContainer = document.getElementById('team-cards-container');
+                 const teamDetailsContainer = document.getElementById('team-details-container');
+                 teamCardsContainer.addEventListener('click', (e) => {
+                     const card = e.target.closest('.member-card');
+                     if (!card) return;
+ 
+                     const memberId = card.dataset.memberId;
+                     const member = teamData.find(m => m.id === memberId);
+ 
+                     document.querySelectorAll('.member-card').forEach(c => c.style.borderColor = 'transparent');
+                     card.style.borderColor = member.color.replace('0.7', '1');
+                     
+                     teamDetailsContainer.innerHTML = `
+                         <div class="bg-white p-6 rounded-xl shadow-lg border-2" style="border-color: ${member.color.replace('0.7', '0.2')}">
+                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                 <div>
+                                     <h4 class="text-lg font-bold mb-2 text-gray-800">프리 프로덕션 (준비 단계)</h4>
+                                     <ul class="space-y-2 list-disc list-inside text-gray-700">
+                                        ${member.pre_tasks.map(task => `<li>${task}</li>`).join('')}
+                                     </ul>
+                                 </div>
+                                  <div>
+                                     <h4 class="text-lg font-bold mb-2 text-gray-800">프로덕션 (현장 실행)</h4>
+                                     <ul class="space-y-2 list-disc list-inside text-gray-700">
+                                        ${member.prod_tasks.map(task => `<li>${task}</li>`).join('')}
+                                     </ul>
+                                 </div>
+                             </div>
+                         </div>
+                     `;
+                 });
+ 
+                 const viewPersonTab = document.getElementById('view-by-person-tab');
+                 const viewPreProdTab = document.getElementById('view-by-pre-prod-tab');
+                 const viewProdTab = document.getElementById('view-by-prod-tab');
+                 const personPanel = document.getElementById('view-panel-person');
+                 const preProdPanel = document.getElementById('view-panel-pre-prod');
+                 const prodPanel = document.getElementById('view-panel-prod');
+                 
+                 function renderPhaseView(panel, taskType) {
+                     panel.innerHTML = '';
+                     teamData.forEach(member => {
+                         const memberEl = document.createElement('div');
+                         memberEl.className = 'p-4 rounded-lg';
+                         memberEl.style.backgroundColor = member.color.replace('0.7', '0.1');
+                         const tasks = member[taskType].map(task => `<li>${task}</li>`).join('');
+                         memberEl.innerHTML = `
+                              <h4 class="text-lg font-bold mb-2 flex items-center" style="color: ${member.color.replace('0.7', '1')}">
+                                 <span class="text-2xl mr-2">${member.emoji}</span>
+                                 ${member.name}
+                             </h4>
+                             <ul class="space-y-2 list-disc list-inside text-gray-700 pl-4">${tasks}</ul>
+                         `;
+                         panel.appendChild(memberEl);
+                     });
+                 }
+ 
+                 viewPersonTab.addEventListener('click', () => {
+                     personPanel.classList.remove('hidden');
+                     preProdPanel.classList.add('hidden');
+                     prodPanel.classList.add('hidden');
+                     viewPersonTab.classList.add('active');
+                     viewPreProdTab.classList.remove('active');
+                     viewProdTab.classList.remove('active');
+                 });
+                 viewPreProdTab.addEventListener('click', () => {
+                     personPanel.classList.add('hidden');
+                     preProdPanel.classList.remove('hidden');
+                     prodPanel.classList.add('hidden');
+                     viewPersonTab.classList.remove('active');
+                     viewPreProdTab.classList.add('active');
+                     viewProdTab.classList.remove('active');
+                     renderPhaseView(preProdPanel, 'pre_tasks');
+                 });
+                 viewProdTab.addEventListener('click', () => {
+                     personPanel.classList.add('hidden');
+                     preProdPanel.classList.add('hidden');
+                     prodPanel.classList.remove('hidden');
+                     viewPersonTab.classList.remove('active');
+                     viewPreProdTab.classList.remove('active');
+                     viewProdTab.classList.add('active');
+                     renderPhaseView(prodPanel, 'prod_tasks');
+                 });
+                 
+                 // Video Modal Logic
+                 const strategySection = document.getElementById('strategy');
+                 strategySection.addEventListener('click', (e) => {
+                      const button = e.target.closest('.kick-edge-ref-btn');
+                      if(button) {
+                         const videoModal = document.getElementById('video-modal');
+                         const youtubeIframe = document.getElementById('youtube-iframe');
+                         const url = button.dataset.url;
+                         youtubeIframe.src = url;
+                         videoModal.classList.remove('hidden');
+                     }
+                 });
+                 
+                 const closeVideoModalBtn = document.getElementById('close-video-modal');
+                 const videoModal = document.getElementById('video-modal');
+                 const youtubeIframe = document.getElementById('youtube-iframe');
+ 
+                 const closeVideoModal = () => {
+                     videoModal.classList.add('hidden');
+                     youtubeIframe.src = ""; // Stop video playback
+                 };
+ 
+                 closeVideoModalBtn.addEventListener('click', closeVideoModal);
+                 videoModal.addEventListener('click', (e) => {
+                     if (e.target === videoModal) {
+                         closeVideoModal();
+                     }
+                 });
+            }
 
-            const closeVideoModal = () => {
-                videoModal.classList.add('hidden');
-                youtubeIframe.src = ""; // Stop video playback
-            };
-
-            closeVideoModalBtn.addEventListener('click', closeVideoModal);
-            videoModal.addEventListener('click', (e) => {
-                if (e.target === videoModal) {
-                    closeVideoModal();
-                }
-            });
-
-            initFirebase(); // Call initFirebase after all functions and variables are defined.
+            setupEventListeners();
+            initFirebase();
         });
     </script>
 </body>
