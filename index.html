@@ -5,105 +5,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Chosen Palette: Warm Neutral Harmony -->
     <!-- Application Structure Plan: A single-page dashboard designed for clarity and quick access to key project areas. The structure flows from high-level vision to specific details: 1. Vision & Strategy, 2. Team & Roles (interactive), 3. Technical Setup (visual diagram), 4. Interactive Timeline/Roadmap (Chart.js Gantt), and 5. Detailed Individual Schedules (dynamically shown). This structure allows users to get a quick overview and then drill down into specific areas of interest, which is more user-friendly than a linear report. -->
-    <!-- Visualization & Content Choices: Report Info: Project Timeline -> Goal: Organize & Change -> Viz: Interactive Gantt Chart (Chart.js) -> Interaction: Filter by phase/person -> Justification: Allows easy visualization of the entire project schedule and individual responsibilities over time. Report Info: Team Roles & Tasks -> Goal: Organize & Inform -> Viz: Interactive HTML/CSS Cards -> Interaction: Click to expand -> Justification: Presents a clean overview of the team, with details available on demand to avoid clutter. Report Info: Camera Setup -> Goal: Inform -> Viz: HTML/CSS Diagram -> Interaction: Hover for info -> Justification: A visual representation is more intuitive than a text list for understanding the complex 18-camera setup. -->
+    <!-- Visualization & Content Choices: Report Info: Project Timeline -> Goal: Organize & Change -> Viz: Interactive Gantt Chart (Chart.js) with Firebase backend -> Interaction: Add, Edit, Delete tasks dynamically. Filter by phase/person -> Justification: Allows real-time, collaborative editing and easy visualization of the entire project schedule and individual responsibilities over time. Report Info: Team Roles & Tasks -> Goal: Organize & Inform -> Viz: Interactive HTML/CSS Cards -> Interaction: Click to expand -> Justification: Presents a clean overview of the team, with details available on demand to avoid clutter. Report Info: Camera Setup -> Goal: Inform -> Viz: HTML/CSS Diagram -> Interaction: Hover for info -> Justification: A visual representation is more intuitive than a text list for understanding the complex 18-camera setup. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 
     <title>지지 프로덕션 2025 WSOP Cyprus 인터랙티브 계획서</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns"></script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, addDoc, setDoc, deleteDoc, doc, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        window.firebase = {
+            initializeApp,
+            getAuth,
+            signInAnonymously,
+            signInWithCustomToken,
+            getFirestore,
+            collection,
+            onSnapshot,
+            addDoc,
+            setDoc,
+            deleteDoc,
+            doc,
+            getDocs,
+            writeBatch
+        };
+    </script>
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Noto Sans KR', sans-serif;
-            background-color: #F8F7F4;
-            color: #3D3D3D;
-        }
-        .card {
-            background-color: #FFFFFF;
-            border: 1px solid #EAEAEA;
-            transition: all 0.3s ease;
-        }
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-        }
-        .nav-link {
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        .nav-link:hover, .nav-link.active {
-            color: #A0522D;
-            border-bottom: 2px solid #A0522D;
-        }
-        .tag {
-            background-color: #EFEBE9;
-            color: #6D4C41;
-            font-size: 0.75rem;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-weight: 500;
-        }
-        .btn {
-            transition: all 0.3s ease;
-        }
-        .btn-primary {
-            background-color: #A0522D;
-            color: white;
-        }
-        .btn-primary:hover {
-            background-color: #8B4513;
-        }
-        .btn-secondary {
-            background-color: #E0E0E0;
-            color: #3D3D3D;
-        }
-        .btn-secondary:hover {
-            background-color: #BDBDBD;
-        }
-        .btn.active {
-             background-color: #8B4513;
-             color: white;
-        }
-        .section-title::after {
-            content: '';
-            display: block;
-            width: 50px;
-            height: 3px;
-            background-color: #A0522D;
-            margin-top: 8px;
-        }
-        .chart-container {
-            position: relative;
-            width: 100%;
-            max-width: 1200px;
-            margin-left: auto;
-            margin-right: auto;
-            height: 500px;
-            max-height: 70vh;
-        }
-        .reference-link {
-            font-size: 0.8rem;
-            color: #A0522D;
-            text-decoration: underline;
-            margin-left: 8px;
-        }
-        .camera-icon {
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
-        }
-        .tab-btn {
-            padding: 0.75rem 1.5rem;
-            font-weight: 500;
-            color: #6B7280;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
-        }
-        .tab-btn.active {
-            color: #A0522D;
-            border-bottom-color: #A0522D;
-        }
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #F8F7F4; color: #3D3D3D; }
+        .card { background-color: #FFFFFF; border: 1px solid #EAEAEA; transition: all 0.3s ease; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .nav-link { transition: all 0.3s ease; cursor: pointer; }
+        .nav-link:hover, .nav-link.active { color: #A0522D; border-bottom: 2px solid #A0522D; }
+        .btn { transition: all 0.3s ease; }
+        .btn-primary { background-color: #A0522D; color: white; }
+        .btn-primary:hover { background-color: #8B4513; }
+        .btn-secondary { background-color: #E0E0E0; color: #3D3D3D; }
+        .btn-secondary:hover { background-color: #BDBDBD; }
+        .btn.active { background-color: #8B4513; color: white; }
+        .section-title::after { content: ''; display: block; width: 50px; height: 3px; background-color: #A0522D; margin-top: 8px; }
+        .chart-container { position: relative; width: 100%; max-width: 1200px; margin-left: auto; margin-right: auto; height: 500px; max-height: 70vh; }
+        .camera-icon { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
+        .tab-btn { padding: 0.75rem 1.5rem; font-weight: 500; color: #6B7280; border-bottom: 3px solid transparent; transition: all 0.3s ease; }
+        .tab-btn.active { color: #A0522D; border-bottom-color: #A0522D; }
+        .modal-overlay { background-color: rgba(0,0,0,0.5); transition: opacity 0.3s ease-in-out; }
+        .ref-btn { background-color: rgba(255, 255, 255, 0.2); backdrop-filter: blur(4px); border: 1px solid rgba(255, 255, 255, 0.3); }
+        .ref-btn:hover { background-color: rgba(255, 255, 255, 0.3); }
     </style>
 </head>
 <body class="antialiased">
@@ -146,87 +100,138 @@
                         플레이어 미드 샷을 포함한 모든 기본 샷에서 일관되게 구현되는 최고 수준의 A컷. <br> 모든 샷을 완벽하게 계산된 사진 작품처럼 구성하여, <br> 방송 전체의 기본 품질을 격상시키고 지속적인 몰입감을 제공합니다.
                     </p>
                 </div>
-                <div class="card p-8 rounded-xl shadow-lg">
+                <div class="card p-8 rounded-xl shadow-lg relative group overflow-hidden">
                     <div class="flex items-center mb-4">
                         <span class="text-3xl mr-4">🔥</span>
                         <h3 class="text-2xl font-bold text-gray-800">킥 엣지 (Kick Edge)</h3>
-                        <a href="https://www.youtube.com/live/QP5TZGTR3B8?si=OEsRaP6rLb_jJCVl&t=28293" target="_blank" class="reference-link">레퍼런스 보기</a>
                     </div>
                     <p class="text-gray-600 mb-2 font-semibold">"핵심 핸드의 다이나믹한 연출"</p>
                     <p class="text-gray-600">
                         대회의 가장 중요한 분기점에서 펼쳐지는 특별한 숏 시퀀스. <br> 빅팟 올인, 중요 인물의 탈락 위기 등 주요 순간에 극적인 연출을 도입하여 시청자에게 강렬한 드라마와 감동을 선사합니다.
                     </p>
+                    <div class="absolute inset-0 bg-black bg-opacity-70 flex flex-col items-center justify-center space-y-4 p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <button class="ref-btn text-white font-bold py-2 px-4 rounded-lg w-full kick-edge-ref-btn" data-url="https://www.youtube.com/embed/QP5TZGTR3B8?start=28293&autoplay=1&mute=1">▶ 레퍼런스 #01</button>
+                        <button class="ref-btn text-white font-bold py-2 px-4 rounded-lg w-full kick-edge-ref-btn" data-url="https://www.youtube.com/embed/6kdfG00zYCI?start=8142&autoplay=1&mute=1">▶ 레퍼런스 #02</button>
+                    </div>
                 </div>
             </div>
         </section>
 
         <section id="team" class="mb-20">
             <h2 class="section-title text-3xl font-bold text-gray-900 mb-12 text-center">프로젝트 팀 및 역할</h2>
-            <div id="team-cards-container" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div class="bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+                <div class="flex justify-center border-b border-gray-200 mb-8">
+                    <button id="view-by-person-tab" class="tab-btn active">개인별 보기</button>
+                    <button id="view-by-pre-prod-tab" class="tab-btn">프리 프로덕션 업무</button>
+                    <button id="view-by-prod-tab" class="tab-btn">프로덕션 업무</button>
+                </div>
+
+                <div id="view-panel-person">
+                    <div id="team-cards-container" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8"></div>
+                    <div id="team-details-container" class="mt-8"></div>
+                </div>
+
+                <div id="view-panel-pre-prod" class="hidden space-y-6"></div>
+                <div id="view-panel-prod" class="hidden space-y-6"></div>
             </div>
-            <div id="team-details-container" class="mt-8"></div>
         </section>
 
         <section id="setup" class="mb-20">
-            <h2 class="section-title text-3xl font-bold text-gray-900 mb-12 text-center">장비 구성: 18-Camera System</h2>
+            <h2 class="section-title text-3xl font-bold text-gray-900 mb-12 text-center">장비 구성 진화: MPP → WSOP SC</h2>
             <div class="bg-white p-8 rounded-xl shadow-lg border border-gray-200">
-                <p class="text-center text-gray-600 mb-8">안정적인 방송 제작을 위해 2개의 피처 테이블을 운용하며, <br> 각 테이블은 아래와 같이 9대의 카메라로 구성됩니다. (총 18대)</p>
+                <p class="text-center text-gray-600 mb-8">5월 MPP 프로젝트의 경험을 바탕으로, 10월 WSOP SC에서는 카메라 시스템을 단계적으로 발전시켜 A컷 품질을 극대화합니다.</p>
                 
                 <div class="flex justify-center border-b border-gray-200 mb-8">
-                    <button id="tab-table1" class="tab-btn active">테이블 1 (Green)</button>
-                    <button id="tab-table2" class="tab-btn">테이블 2 (Blue)</button>
+                    <button id="tab-may-initial" class="tab-btn active">5월 MPP 초기</button>
+                    <button id="tab-may-final" class="tab-btn">5월 MPP 후기</button>
+                    <button id="tab-oct" class="tab-btn">10월 WSOP SC</button>
                 </div>
-
-                <div id="tab-panel-table1" class="tab-panel">
+                
+                <!-- 5월 MPP 초기 패널 -->
+                <div id="tab-panel-may-initial" class="tab-panel">
+                     <p class="text-center font-semibold text-gray-700 mb-4">기본 8캠 시스템으로 안정적 운영에 집중</p>
                     <div class="relative max-w-4xl mx-auto aspect-[16/9] flex items-center justify-center p-4 sm:p-8">
                         <div class="absolute w-full h-full flex items-center justify-center">
-                             <div class="w-[60%] h-[55%] bg-green-800 border-8 border-yellow-800 rounded-[50%] flex items-center justify-center text-white font-bold relative">
+                             <div class="w-[60%] h-[55%] bg-gray-500 border-8 border-gray-700 rounded-[50%] flex items-center justify-center text-white font-bold relative">
                                 <div class="absolute bottom-2 bg-slate-900 px-4 py-1 rounded-md text-sm shadow-lg">Dealer</div>
-                                 <div class="absolute text-center">
-                                     <div class="flex items-center gap-1 text-sm">🔝<span class="hidden sm:inline">탑 캠</span></div>
-                                     <div class="flex items-center gap-1 text-sm">🃏<span class="hidden sm:inline">보드 캠</span></div>
-                                </div>
+                                 <div class="absolute text-center"><div class="flex items-center gap-1 text-sm">📷<span class="hidden sm:inline">탑 캠</span></div><div class="flex items-center gap-1 text-sm">📹<span class="hidden sm:inline">보드 캠</span></div></div>
                             </div>
                         </div>
-                        <div class="absolute top-[20%] left-[5%] text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">🎥</div><span class="text-xs font-semibold">FR7 #5</span></div>
-                        <div class="absolute top-[55%] left-0 text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">🎥</div><span class="text-xs font-semibold">FR7 #4</span></div>
-                        <div class="absolute bottom-[5%] left-[15%] text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">🎥</div><span class="text-xs font-semibold">FR7 #3</span></div>
-                        <div class="absolute bottom-[5%] right-[15%] text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">🎥</div><span class="text-xs font-semibold">FR7 #2</span></div>
-                        <div class="absolute top-[55%] right-0 text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">🎥</div><span class="text-xs font-semibold">FR7 #1</span></div>
+                        <div class="absolute top-[55%] left-0 text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">📹</div><span class="text-xs font-semibold">FR7 #4</span></div>
+                        <div class="absolute bottom-[5%] left-[15%] text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">📹</div><span class="text-xs font-semibold">FR7 #3</span></div>
+                        <div class="absolute bottom-[5%] right-[15%] text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">📹</div><span class="text-xs font-semibold">FR7 #2</span></div>
+                        <div class="absolute top-[55%] right-0 text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">📹</div><span class="text-xs font-semibold">FR7 #1</span></div>
                         <div class="absolute top-0 right-[20%] text-center camera-icon"><div class="text-2xl sm:text-4xl text-green-500">🎥</div><span class="text-xs font-semibold">Free Cam</span></div>
-                        <div class="absolute bottom-0 left-[35%] text-center camera-icon"><div class="text-2xl sm:text-4xl text-purple-500">🎥</div><span class="text-xs font-semibold">Full Shot</span></div>
+                        <div class="absolute bottom-0 left-1/2 -translate-x-1/2 text-center camera-icon"><div class="text-2xl sm:text-4xl text-purple-500">🎥</div><span class="text-xs font-semibold">Full Shot</span></div>
                     </div>
+                     <ul class="mt-8 text-center text-gray-700 grid grid-cols-2 sm:grid-cols-3 gap-2 max-w-3xl mx-auto">
+                        <li>📹 Sony FR7 (PTZ) x 4</li>
+                        <li>📹 보드 캠 (FR7) x 1</li>
+                        <li>📷 탑 캠 (Overhead) x 1</li>
+                        <li>🎥 프리 캠 (Freelance) x 1</li>
+                        <li>🎥 풀 샷 캠 (Full Shot) x 1</li>
+                        <li class="font-bold col-span-full sm:col-auto">총 8대 / 테이블</li>
+                    </ul>
                 </div>
 
-                <div id="tab-panel-table2" class="tab-panel hidden">
+                <!-- 5월 MPP 후기 패널 -->
+                <div id="tab-panel-may-final" class="tab-panel hidden">
+                     <p class="text-center font-semibold text-gray-700 mb-4">인물 고정 캠 추가로 A컷 안정화</p>
                     <div class="relative max-w-4xl mx-auto aspect-[16/9] flex items-center justify-center p-4 sm:p-8">
+                        <div class="absolute w-full h-full flex items-center justify-center">
+                             <div class="w-[60%] h-[55%] bg-gray-500 border-8 border-gray-700 rounded-[50%] flex items-center justify-center text-white font-bold relative">
+                                <div class="absolute bottom-2 bg-slate-900 px-4 py-1 rounded-md text-sm shadow-lg">Dealer</div>
+                                 <div class="absolute text-center"><div class="flex items-center gap-1 text-sm">📷<span class="hidden sm:inline">탑 캠</span></div><div class="flex items-center gap-1 text-sm">📹<span class="hidden sm:inline">보드 캠</span></div></div>
+                            </div>
+                        </div>
+                        <div class="absolute top-[20%] left-[5%] text-center camera-icon"><div class="text-2xl sm:text-4xl text-gray-400">🎥</div><span class="text-xs font-semibold">인물 고정 캠</span></div>
+                        <div class="absolute top-[55%] left-0 text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">📹</div><span class="text-xs font-semibold">FR7 #4</span></div>
+                        <div class="absolute bottom-[5%] left-[15%] text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">📹</div><span class="text-xs font-semibold">FR7 #3</span></div>
+                        <div class="absolute bottom-[5%] right-[15%] text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">📹</div><span class="text-xs font-semibold">FR7 #2</span></div>
+                        <div class="absolute top-[55%] right-0 text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">📹</div><span class="text-xs font-semibold">FR7 #1</span></div>
+                        <div class="absolute top-0 right-[20%] text-center camera-icon"><div class="text-2xl sm:text-4xl text-green-500">🎥</div><span class="text-xs font-semibold">Free Cam</span></div>
+                        <div class="absolute bottom-0 left-1/2 -translate-x-1/2 text-center camera-icon"><div class="text-2xl sm:text-4xl text-purple-500">🎥</div><span class="text-xs font-semibold">Full Shot</span></div>
+                    </div>
+                     <ul class="mt-8 text-center text-gray-700 grid grid-cols-2 sm:grid-cols-3 gap-2 max-w-3xl mx-auto">
+                        <li>📹 Sony FR7 (PTZ) x 4</li>
+                        <li>🎥 인물 고정 캠 x 1</li>
+                        <li>📹 보드 캠 (FR7) x 1</li>
+                        <li>📷 탑 캠 (Overhead) x 1</li>
+                        <li>🎥 프리 캠 (Freelance) x 1</li>
+                        <li>🎥 풀 샷 캠 (Full Shot) x 1</li>
+                        <li class="font-bold col-span-full sm:col-auto">총 9대 / 테이블</li>
+                    </ul>
+                </div>
+
+                <!-- 10월 WSOP SC 패널 -->
+                <div id="tab-panel-oct" class="tab-panel hidden">
+                    <p class="text-center font-semibold text-gray-700 mb-4">전체 FR7 시스템으로 업그레이드하여 퀄리티 표준화 (총 10캠)</p>
+                     <div class="relative max-w-4xl mx-auto aspect-[16/9] flex items-center justify-center p-4 sm:p-8">
                         <div class="absolute w-full h-full flex items-center justify-center">
                              <div class="w-[60%] h-[55%] bg-blue-800 border-8 border-yellow-800 rounded-[50%] flex items-center justify-center text-white font-bold relative">
                                 <div class="absolute bottom-2 bg-slate-900 px-4 py-1 rounded-md text-sm shadow-lg">Dealer</div>
-                                 <div class="absolute text-center">
-                                     <div class="flex items-center gap-1 text-sm">🔝<span class="hidden sm:inline">탑 캠</span></div>
-                                     <div class="flex items-center gap-1 text-sm">🃏<span class="hidden sm:inline">보드 캠</span></div>
-                                </div>
+                                <div class="absolute text-center"><div class="flex items-center gap-1 text-sm">📷<span class="hidden sm:inline">탑 캠</span></div><div class="flex items-center gap-1 text-sm">📹<span class="hidden sm:inline">보드 캠</span></div></div>
                             </div>
                         </div>
-                        <div class="absolute top-[20%] left-[5%] text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">🎥</div><span class="text-xs font-semibold">FR7 #5</span></div>
-                        <div class="absolute top-[55%] left-0 text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">🎥</div><span class="text-xs font-semibold">FR7 #4</span></div>
-                        <div class="absolute bottom-[5%] left-[15%] text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">🎥</div><span class="text-xs font-semibold">FR7 #3</span></div>
-                        <div class="absolute bottom-[5%] right-[15%] text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">🎥</div><span class="text-xs font-semibold">FR7 #2</span></div>
-                        <div class="absolute top-[55%] right-0 text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">🎥</div><span class="text-xs font-semibold">FR7 #1</span></div>
-                        <div class="absolute top-0 right-[20%] text-center camera-icon"><div class="text-2xl sm:text-4xl text-green-500">🎥</div><span class="text-xs font-semibold">Free Cam</span></div>
-                        <div class="absolute bottom-0 left-[35%] text-center camera-icon"><div class="text-2xl sm:text-4xl text-purple-500">🎥</div><span class="text-xs font-semibold">Full Shot</span></div>
+                        <div class="absolute top-[20%] left-[5%] text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">📹</div><span class="text-xs font-semibold">FR7 #5</span></div>
+                        <div class="absolute top-[55%] left-0 text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">📹</div><span class="text-xs font-semibold">FR7 #4</span></div>
+                        <div class="absolute bottom-[5%] left-[15%] text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">📹</div><span class="text-xs font-semibold">FR7 #3</span></div>
+                        <div class="absolute bottom-[5%] right-[15%] text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">📹</div><span class="text-xs font-semibold">FR7 #2</span></div>
+                        <div class="absolute top-[55%] right-0 text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">📹</div><span class="text-xs font-semibold">FR7 #1</span></div>
+                        <div class="absolute top-[20%] right-[5%] text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">📹</div><span class="text-xs font-semibold">FR7 #6</span></div>
+                        <div class="absolute top-0 right-[25%] text-center camera-icon"><div class="text-2xl sm:text-4xl text-green-500">🎥</div><span class="text-xs font-semibold">Free Cam</span></div>
+                        <div class="absolute bottom-0 left-1/2 -translate-x-1/2 text-center camera-icon"><div class="text-2xl sm:text-4xl text-purple-500">🎥</div><span class="text-xs font-semibold">Full Shot</span></div>
                     </div>
+                     <ul class="mt-8 text-center text-gray-700 grid grid-cols-2 sm:grid-cols-3 gap-2 max-w-3xl mx-auto">
+                        <li>📹 Sony FR7 (PTZ) x 6</li>
+                        <li>📹 보드 캠 (FR7) x 1</li>
+                        <li>📷 탑 캠 (Overhead) x 1</li>
+                        <li>🎥 프리 캠 (Freelance) x 1</li>
+                        <li>🎥 풀 샷 캠 (Full Shot) x 1</li>
+                        <li class="font-bold col-span-full sm:col-auto">총 10대 / 테이블</li>
+                    </ul>
                 </div>
 
-                 <ul class="mt-8 text-center text-gray-700 grid grid-cols-2 sm:grid-cols-3 gap-2 max-w-3xl mx-auto">
-                    <li>🎥 Sony FR7 (PTZ) x 5</li>
-                    <li>🃏 보드 캠 (Hole Card) x 1</li>
-                    <li>� 탑 캠 (Overhead) x 1</li>
-                    <li>🏃 프리 캠 (Freelance) x 1</li>
-                    <li>🖼️ 풀 샷 캠 (Full Shot) x 1</li>
-                    <li class="font-bold col-span-full sm:col-auto">총 9대 / 테이블</li>
-                </ul>
             </div>
         </section>
         
@@ -234,19 +239,23 @@
             <h2 class="section-title text-3xl font-bold text-gray-900 mb-12 text-center">프로젝트 로드맵</h2>
             <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
                  <div class="flex flex-wrap justify-center gap-2 mb-6">
-                    <button id="filter-all" class="btn btn-primary px-4 py-2 rounded-full text-sm">전체</button>
-                    <button id="filter-phase1" class="btn btn-secondary px-4 py-2 rounded-full text-sm">1단계</button>
-                    <button id="filter-phase2" class="btn btn-secondary px-4 py-2 rounded-full text-sm">2단계</button>
-                    <button id="filter-phase3" class="btn btn-secondary px-4 py-2 rounded-full text-sm">3단계</button>
-                    <button id="filter-phase4" class="btn btn-secondary px-4 py-2 rounded-full text-sm">최종 준비</button>
-                    <span class="border-l mx-2"></span>
-                    <button id="filter-aiden" class="btn btn-secondary px-4 py-2 rounded-full text-sm">👑 Aiden</button>
-                    <button id="filter-kai" class="btn btn-secondary px-4 py-2 rounded-full text-sm">🎨 Kai</button>
-                    <button id="filter-matthew" class="btn btn-secondary px-4 py-2 rounded-full text-sm">🛠️ Matthew</button>
-                    <button id="filter-trey" class="btn btn-secondary px-4 py-2 rounded-full text-sm">🕹️ Trey</button>
+                    <button id="filter-all" class="btn btn-primary px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm">전체</button>
+                    <button id="filter-phase1" class="btn btn-secondary px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm">1단계</button>
+                    <button id="filter-phase2" class="btn btn-secondary px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm">2단계</button>
+                    <button id="filter-phase3" class="btn btn-secondary px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm">3단계</button>
+                    <button id="filter-phase4" class="btn btn-secondary px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm">최종 준비</button>
+                    <span class="border-l mx-2 hidden sm:block"></span>
+                    <button id="filter-aiden" class="btn btn-secondary px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm">👑 Aiden</button>
+                    <button id="filter-kai" class="btn btn-secondary px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm">🎨 Kai</button>
+                    <button id="filter-matthew" class="btn btn-secondary px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm">🛠️ Matthew</button>
+                    <button id="filter-trey" class="btn btn-secondary px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm">🕹️ Trey</button>
                 </div>
+                 <div id="task-list-container" class="mb-4"></div>
                 <div class="chart-container">
                     <canvas id="ganttChart"></canvas>
+                </div>
+                <div class="text-center mt-6">
+                    <button id="add-task-btn" class="btn btn-primary px-6 py-2 rounded-lg font-semibold">업무 추가</button>
                 </div>
             </div>
         </section>
@@ -258,35 +267,274 @@
         </div>
     </footer>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
+    <!-- Task Modal -->
+    <div id="task-modal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div class="p-6">
+                <h3 id="modal-title" class="text-xl font-bold mb-4">업무 추가/수정</h3>
+                <form id="task-form">
+                    <input type="hidden" id="task-id">
+                    <div class="mb-4">
+                        <label for="task-label" class="block text-sm font-medium text-gray-700">업무 내용</label>
+                        <input type="text" id="task-label" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="task-member" class="block text-sm font-medium text-gray-700">담당자</label>
+                        <select id="task-member" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required></select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="task-start" class="block text-sm font-medium text-gray-700">시작일</label>
+                            <input type="date" id="task-start" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required>
+                        </div>
+                        <div>
+                            <label for="task-end" class="block text-sm font-medium text-gray-700">종료일</label>
+                            <input type="date" id="task-end" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required>
+                        </div>
+                    </div>
+                     <div class="mb-4">
+                        <label for="task-phase" class="block text-sm font-medium text-gray-700">단계</label>
+                        <select id="task-phase" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required>
+                            <option value="1">1단계: 분석/기획</option>
+                            <option value="2">2단계: R&D</option>
+                            <option value="3">3단계: 리허설</option>
+                            <option value="4">4단계: 최종 준비</option>
+                        </select>
+                    </div>
+                    <div class="flex justify-end gap-2">
+                         <button type="button" id="delete-task-btn" class="btn bg-red-600 text-white px-4 py-2 rounded-md hidden">삭제</button>
+                        <button type="button" id="close-modal-btn" class="btn btn-secondary px-4 py-2 rounded-md">취소</button>
+                        <button type="submit" class="btn btn-primary px-4 py-2 rounded-md">저장</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Video Modal -->
+    <div id="video-modal" class="modal-overlay fixed inset-0 z-[100] flex items-center justify-center p-4 hidden">
+        <div class="bg-black w-full max-w-4xl aspect-video relative">
+            <iframe id="youtube-iframe" class="w-full h-full" src="" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+            <button id="close-video-modal" class="absolute -top-2 -right-2 text-white bg-black rounded-full w-8 h-8 flex items-center justify-center text-xl">&times;</button>
+        </div>
+    </div>
 
-            const teamData = [
-                { id: 'aiden', name: 'Aiden Kim', role: '파트 리더', emoji: '👑', color: 'rgba(217, 119, 6, 0.7)', tasks: [
-                    'A컷 품질 향상 목표 설정 및 팀 비전 제시',
-                    'A컷 스타일 가이드 최종 제안',
-                    '팀원 R&D 방향 설정 및 성과 관리',
-                    '리허설 지휘 및 현장 카메라 디렉팅',
-                    '"킥 엣지" 특별 숏 시퀀스 창의적 연출 담당'
-                ]},
-                { id: 'kai', name: 'Kai Kim', role: '카메라 감독', emoji: '🎨', color: 'rgba(59, 130, 246, 0.7)', tasks: [
-                    '프리캠(2인) 총괄 디렉팅 및 A컷 품질 책임',
-                    'A컷 미학적 요소 (구도, 앵글) R&D 주도',
-                    'A컷 스타일 가이드 시각적 레퍼런스 제작',
-                    '6GHz 무선 시스템 등 전체 방송 장비 테스트/관리'
-                ]},
-                { id: 'matthew', name: 'Matthew Kim', role: '기술/장비 감독', emoji: '🛠️', color: 'rgba(22, 163, 74, 0.7)', tasks: [
-                    '18캠 시스템 최적화 및 A컷 구현 설정 확보',
-                    '조명/렌즈 등 기술 요소 R&D 및 최적 조합 연구',
-                    '사이프러스 현지 장비 설치/운영 등 기술 물류 총괄'
-                ]},
-                { id: 'trey', name: 'Trey Song', role: '스위처 시스템 개발 / 운용', emoji: '🕹️', color: 'rgba(120, 81, 169, 0.7)', tasks: [
-                    '플레이어 액션 기반 신규 스위처 시스템 개발',
-                    '휴먼 에러 최소화를 위한 스위칭 로직 구현',
-                    '포커 도메인 분석을 통한 "킥 엣지" 발생 예측',
-                    'GFX 오퍼레이터 협업 및 방송 아카이빙 담당'
-                ]}
-            ];
+
+    <script type="module">
+        const { initializeApp } = window.firebase;
+        const { getAuth, signInAnonymously, signInWithCustomToken } = window.firebase;
+        const { getFirestore, collection, onSnapshot, addDoc, doc, setDoc, deleteDoc, getDocs, writeBatch } = window.firebase;
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        let db, auth, userId, taskCollection;
+        let allTasks = [];
+        let currentFilter = 'all';
+        let ganttChart;
+        let isInitialDataSeeded = false;
+
+        const teamData = [
+            { id: 'aiden', name: 'Aiden Kim', role: '파트 리더', emoji: '👑', color: 'rgba(217, 119, 6, 0.7)', 
+              pre_tasks: [
+                'A컷 품질 향상 목표 설정 및 팀 비전 제시', 'A컷 스타일 가이드 최종 제안', '팀원 R&D 방향 설정 및 성과 관리', '리허설 시나리오 설계 및 총괄 지휘'
+              ],
+              prod_tasks: [
+                '현장 카메라 디렉팅 총괄', '"킥 엣지" 특별 숏 시퀀스 창의적 연출 담당', '최종 의사결정 및 현장 문제 해결'
+              ]
+            },
+            { id: 'kai', name: 'Kai Kim', role: '카메라 감독', emoji: '🎨', color: 'rgba(59, 130, 246, 0.7)',
+              pre_tasks: [
+                'A컷 미학적 요소 (구도, 앵글) R&D 주도', 'A컷 스타일 가이드 시각적 레퍼런스 제작', '6GHz 무선 시스템 등 전체 방송 장비 테스트/관리', '리허설 시 미학/연출 점검'
+              ],
+              prod_tasks: [
+                '프리캠(2인) 총괄 디렉팅 및 A컷 품질 책임', '현장 A컷 품질 실시간 관리', '"킥 엣지" 시퀀스 실행 감독'
+              ]
+            },
+            { id: 'matthew', name: 'Matthew Kim', role: '기술/장비 감독', emoji: '🛠️', color: 'rgba(22, 163, 74, 0.7)',
+               pre_tasks: [
+                '18캠 시스템 최적화 및 A컷 구현 설정 확보', '조명/렌즈 등 기술 요소 R&D 및 최적 조합 연구', '사이프러스 물류/운송 계획 수립', '리허설 시 기술 지원 및 시스템 안정성 점검'
+              ],
+              prod_tasks: [
+                '현장 장비 설치, 운영, 철수 총괄', '실시간 기술 문제 해결 및 장비 트러블슈팅', '데이터 관리 및 백업 총괄'
+              ]
+            },
+            { id: 'trey', name: 'Trey Song', role: '스위처 시스템 개발 / 운용', emoji: '🕹️', color: 'rgba(120, 81, 169, 0.7)',
+              pre_tasks: [
+                '플레이어 액션 기반 신규 스위처 시스템 개발', '휴먼 에러 최소화를 위한 스위칭 로직 구현', '포커 도메인 분석을 통한 "킥 엣지" 발생 예측 모델 연구', 'GFX/아카이빙 시스템 설계 및 연동 테스트', '리허설 시 스위처 통합 테스트'
+              ],
+              prod_tasks: [
+                '메인 스위처 실시간 운용', '카메라 콜 및 GFX 연동 실행', '방송 영상 실시간 아카이빙 관리'
+              ]
+            }
+        ];
+
+        const memberColorMap = teamData.reduce((acc, member) => { acc[member.id] = member.color; return acc; }, {});
+        const memberEmojiMap = teamData.reduce((acc, member) => { acc[member.id] = member.emoji; return acc; }, {});
+
+        const weekLabels = [
+            '6월 W2','6월 W3','6월 W4', // 0,1,2
+            '7월 W1','7월 W2','7월 W3','7월 W4', // 3,4,5,6
+            '8월 W1','8월 W2','8월 W3','8월 W4', // 7,8,9,10
+            '9월 W1','9월 W2','9월 W3','9월 W4', // 11,12,13,14
+            '10월 W1' // 15
+        ];
+        
+        const projectStartDate = new Date('2025-06-09');
+        function dateToWeekIndex(dateStr) {
+            const targetDate = new Date(dateStr);
+            const diffTime = targetDate - projectStartDate;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return Math.floor(diffDays / 7);
+        }
+
+        const initialTasks = [
+                { phase: '1', label: '프로젝트 총괄 기획', member: 'aiden', startDate: '2025-06-11', endDate: '2025-06-28'},
+                { phase: '1', label: '5월 MPP 분석 및 레퍼런스 수집', member: 'kai', startDate: '2025-06-11', endDate: '2025-06-21'},
+                { phase: '1', label: 'A컷 스타일가이드 V0.1', member: 'kai', startDate: '2025-06-24', endDate: '2025-06-28'},
+                { phase: '1', label: '18캠 시스템 구성/요구사항 정의', member: 'matthew', startDate: '2025-06-11', endDate: '2025-06-21'},
+                { phase: '1', label: '6GHz 시스템 리서치/준비', member: 'matthew', startDate: '2025-06-24', endDate: '2025-07-05'},
+                { phase: '2', label: '신규 스위처 분석/설계', member: 'trey', startDate: '2025-08-05', endDate: '2025-08-16'},
+                { phase: '2', label: '팀 R&D 진행상황 점검/피드백', member: 'aiden', startDate: '2025-07-01', endDate: '2025-08-16'},
+                { phase: '2', label: 'R&D: "킥 엣지" 디자인', member: 'aiden', startDate: '2025-08-19', endDate: '2025-08-23'},
+                { phase: '2', label: '기술 통합 및 최종 점검', member: 'aiden', startDate: '2025-08-26', endDate: '2025-08-30'},
+                { phase: '2', label: 'R&D: 구도/앵글 심화', member: 'kai', startDate: '2025-07-01', endDate: '2025-07-12'},
+                { phase: '2', label: 'R&D: 색감/톤앤매너', member: 'kai', startDate: '2025-07-15', endDate: '2025-07-26'},
+                { phase: '2', label: 'R&D: 배경/DoF 및 6GHz 테스트', member: 'kai', startDate: '2025-07-29', endDate: '2025-08-16'},
+                { phase: '2', label: 'A컷 스타일가이드 V1.0 최종화', member: 'kai', startDate: '2025-08-19', endDate: '2025-08-30'},
+                { phase: '2', label: 'R&D: 조명 시스템 설계', member: 'matthew', startDate: '2025-07-08', endDate: '2025-07-19'},
+                { phase: '2', label: 'FR7 및 고정캠 최적화 R&D', member: 'matthew', startDate: '2025-07-22', endDate: '2025-08-02'},
+                { phase: 2, label: '사이프러스 물류/운송 계획', member: 'matthew', start: 8, end: 10},
+                { phase: 2, label: '스위처 개발 및 GFX/아카이빙 연동', member: 'trey', start: 9, end: 10},
+                { phase: 3, label: '리허설 총괄', member: 'aiden', start: 11, end: 14},
+                { phase: 3, label: '리허설 (미학/연출 점검)', member: 'kai', start: 11, end: 14},
+                { phase: 3, label: '리허설 (기술 지원)', member: 'matthew', start: 11, end: 14},
+                { phase: 3, label: '리허설 (스위처 통합 테스트)', member: 'trey', start: 11, end: 14},
+                { phase: 4, label: '최종 패킹 및 출국 준비', member: 'aiden', start: 15, end: 15},
+                { phase: 4, label: '최종 패킹 및 출국 준비', member: 'kai', start: 15, end: 15},
+                { phase: 4, label: '최종 패킹 및 출국 준비', member: 'matthew', start: 15, end: 15},
+                { phase: 4, label: '최종 패킹 및 출국 준비', member: 'trey', start: 15, end: 15},
+            ].map(task => ({ ...task, start: dateToWeekIndex(task.startDate), end: dateToWeekIndex(task.endDate) }));
+
+
+        // Function to update the chart
+        function updateChart(filter) {
+            currentFilter = filter;
+            let filteredTasks;
+            if (filter === 'all' || filter.startsWith('phase')) {
+                if (filter === 'all') {
+                    filteredTasks = allTasks.sort((a,b) => a.start - b.start);
+                } else {
+                    const phaseFilter = filter.replace('phase', '');
+                    filteredTasks = allTasks.filter(task => task.phase === phaseFilter);
+                }
+            } else { 
+                filteredTasks = allTasks.filter(task => task.member === filter);
+            }
+
+            ganttChart.data.labels = filteredTasks.map(d => `${memberEmojiMap[d.member]} ${d.label}`);
+            ganttChart.data.datasets = [{
+                data: filteredTasks.map(d => [d.start, d.end + 1]),
+                backgroundColor: filteredTasks.map(d => memberColorMap[d.member] || d.color),
+                barPercentage: 0.6, borderRadius: 4
+            }];
+            ganttChart.update();
+
+            document.querySelectorAll('#roadmap .btn').forEach(b => {
+                b.classList.remove('active', 'btn-primary');
+                b.classList.add('btn-secondary');
+            });
+            document.getElementById(`filter-${filter}`).classList.add('active', 'btn-primary');
+            document.getElementById(`filter-${filter}`).classList.remove('btn-secondary');
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            initFirebase();
+            
+            const ctx = document.getElementById('ganttChart').getContext('2d');
+            ganttChart = new Chart(ctx, {
+                type: 'bar', data: { labels: [], datasets: [] },
+                options: {
+                    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const startWeek = weekLabels[context.raw[0]];
+                                    const endWeek = weekLabels[context.raw[1] - 1];
+                                    if(!startWeek || !endWeek) return '';
+                                    const labelText = context.chart.data.labels[context.dataIndex].substring(2);
+                                    if(startWeek === endWeek) return `${labelText}: ${startWeek}`;
+                                    return `${labelText}: ${startWeek} ~ ${endWeek}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear', position: 'top', min: -0.5, max: weekLabels.length - 0.5,
+                            ticks: {
+                                stepSize: 1,
+                                callback: function(value, index, ticks) {
+                                     if (index >= weekLabels.length) return '';
+                                    const currentMonth = weekLabels[index].split(' ')[0];
+                                    const prevMonth = index > 0 ? weekLabels[index - 1].split(' ')[0] : '';
+                                    if (currentMonth !== prevMonth) return currentMonth;
+                                    return '';
+                                }
+                            },
+                             grid: { drawOnChartArea: false }
+                        },
+                        xAxis2: {
+                            type: 'linear', position: 'top', min: -0.5, max: weekLabels.length - 0.5,
+                            ticks: {
+                                 stepSize: 1,
+                                callback: function(value, index, ticks) {
+                                    const label = weekLabels[index] || '';
+                                    return label.split(' ')[1] || '';
+                                }
+                            },
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        },
+                        y: { grid: { display: false } }
+                    }
+                }
+            });
+
+            async function initFirebase() {
+                try {
+                    const firebaseConfig = JSON.parse(__firebase_config);
+                    const app = initializeApp(firebaseConfig);
+                    db = getFirestore(app);
+                    auth = getAuth(app);
+                    
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                    userId = auth.currentUser?.uid;
+                    
+                    taskCollection = collection(db, 'artifacts', appId, 'public', 'data', 'roadmap_tasks');
+                    
+                    const querySnapshot = await getDocs(taskCollection);
+                    if (querySnapshot.empty) {
+                        const batch = writeBatch(db);
+                        initialTasks.forEach(task => {
+                            const newDocRef = doc(taskCollection);
+                            batch.set(newDocRef, task);
+                        });
+                        await batch.commit();
+                    }
+
+                    fetchTasks();
+
+                } catch (error) {
+                    console.error("Firebase 초기화 오류:", error);
+                    // Fallback to static data if firebase fails
+                    allTasks = initialTasks;
+                    updateChart('all');
+                }
+            }
             
             const teamCardsContainer = document.getElementById('team-cards-container');
             const teamDetailsContainer = document.getElementById('team-details-container');
@@ -303,197 +551,6 @@
                 `;
                 teamCardsContainer.appendChild(card);
             });
-
-            teamCardsContainer.addEventListener('click', (e) => {
-                const card = e.target.closest('.member-card');
-                if (!card) return;
-
-                const memberId = card.dataset.memberId;
-                const member = teamData.find(m => m.id === memberId);
-
-                document.querySelectorAll('.member-card').forEach(c => c.style.borderColor = 'transparent');
-                card.style.borderColor = member.color.replace('0.7', '1');
-                
-                teamDetailsContainer.innerHTML = `
-                    <div class="bg-white p-8 rounded-xl shadow-lg border border-gray-200 transition-all duration-500 ease-in-out transform opacity-0 -translate-y-4">
-                        <h3 class="text-2xl font-bold text-gray-800 mb-4">${member.name}의 주요 R&D 및 훈련 계획</h3>
-                        <ul class="space-y-3 list-disc list-inside text-gray-700">
-                            ${member.tasks.map(task => `<li>${task}</li>`).join('')}
-                        </ul>
-                    </div>
-                `;
-                setTimeout(() => {
-                    if(teamDetailsContainer.firstElementChild) {
-                        teamDetailsContainer.firstElementChild.classList.remove('opacity-0', '-translate-y-4');
-                    }
-                }, 10);
-            });
-            
-            const weekLabels = [
-                '6월 W2','6월 W3','6월 W4',
-                '7월 W1','7월 W2','7월 W3','7월 W4',
-                '8월 W1','8월 W2','8월 W3','8월 W4',
-                '9월 W1','9월 W2','9월 W3','9월 W4',
-                '10월 W1'
-            ];
-            
-            const timelineData = {
-                all: [
-                    { phase: 1, label: '1단계: 분석/기획', start: 0, end: 2, color: 'rgba(168, 85, 247, 0.6)'},
-                    { phase: 2, label: '2단계: R&D', start: 3, end: 10, color: 'rgba(234, 179, 8, 0.6)'},
-                    { phase: 3, label: '3단계: 리허설', start: 11, end: 14, color: 'rgba(34, 197, 94, 0.6)'},
-                    { phase: 4, label: '4단계: 최종 준비', start: 15, end: 15, color: 'rgba(239, 68, 68, 0.6)'}
-                ],
-                tasks: [
-                    { phase: 1, label: '프로젝트 총괄 기획', member: 'aiden', start: 0, end: 2},
-                    { phase: 1, label: '5월 MPP 분석 및 레퍼런스 수집', member: 'kai', start: 0, end: 1},
-                    { phase: 1, label: 'A컷 스타일가이드 V0.1', member: 'kai', start: 2, end: 2},
-                    { phase: 1, label: '18캠 시스템 구성/요구사항 정의', member: 'matthew', start: 0, end: 1},
-                    { phase: 1, label: '6GHz 시스템 리서치/준비', member: 'matthew', start: 2, end: 3},
-
-                    { phase: 2, label: '팀 R&D 진행상황 점검/피드백', member: 'aiden', start: 3, end: 8},
-                    { phase: 2, label: 'R&D: "킥 엣지" 디자인', member: 'aiden', start: 9, end: 9},
-                    { phase: 2, label: '기술 통합 및 최종 점검', member: 'aiden', start: 10, end: 10},
-                    { phase: 2, label: 'R&D: 구도/앵글 심화', member: 'kai', start: 3, end: 4},
-                    { phase: 2, label: 'R&D: 색감/톤앤매너', member: 'kai', start: 5, end: 6},
-                    { phase: 2, label: 'R&D: 배경/DoF 및 6GHz 테스트', member: 'kai', start: 7, end: 8},
-                    { phase: 2, label: 'A컷 스타일가이드 V1.0 최종화', member: 'kai', start: 9, end: 10},
-                    { phase: 2, label: 'R&D: 조명 시스템 설계', member: 'matthew', start: 4, end: 5},
-                    { phase: 2, label: 'FR7 및 고정캠 최적화 R&D', member: 'matthew', start: 6, end: 7},
-                    { phase: 2, label: '사이프러스 물류/운송 계획', member: 'matthew', start: 8, end: 10},
-
-                    { phase: 2, label: '신규 스위처 분석/설계', member: 'trey', start: 7, end: 8},
-                    { phase: 2, label: '스위처 개발 및 GFX/아카이빙 연동', member: 'trey', start: 9, end: 10},
-                    
-                    { phase: 3, label: '리허설 총괄', member: 'aiden', start: 11, end: 14},
-                    { phase: 3, label: '리허설 (미학/연출 점검)', member: 'kai', start: 11, end: 14},
-                    { phase: 3, label: '리허설 (기술 지원)', member: 'matthew', start: 11, end: 14},
-                    { phase: 3, label: '리허설 (스위처 통합 테스트)', member: 'trey', start: 11, end: 14},
-
-                    { phase: 4, label: '최종 패킹 및 출국 준비', member: 'aiden', start: 15, end: 15},
-                    { phase: 4, label: '최종 패킹 및 출국 준비', member: 'kai', start: 15, end: 15},
-                    { phase: 4, label: '최종 패킹 및 출국 준비', member: 'matthew', start: 15, end: 15},
-                    { phase: 4, label: '최종 패킹 및 출국 준비', member: 'trey', start: 15, end: 15},
-                ]
-            };
-
-            const memberColorMap = teamData.reduce((acc, member) => {
-                acc[member.id] = member.color;
-                return acc;
-            }, {});
-            
-            const memberEmojiMap = teamData.reduce((acc, member) => {
-                acc[member.id] = member.emoji;
-                return acc;
-            }, {});
-
-            const ctx = document.getElementById('ganttChart').getContext('2d');
-            const ganttChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: [],
-                    datasets: []
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const startWeek = weekLabels[context.raw[0]];
-                                    const endWeek = weekLabels[context.raw[1] -1];
-                                    if(!startWeek || !endWeek) return '';
-                                    if(startWeek === endWeek) return `${context.chart.data.labels[context.dataIndex].substring(2)}: ${startWeek}`;
-                                    return `${context.chart.data.labels[context.dataIndex].substring(2)}: ${startWeek} ~ ${endWeek}`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            type: 'linear',
-                            position: 'top',
-                            min: -0.5,
-                            max: weekLabels.length - 0.5,
-                            ticks: {
-                                stepSize: 1,
-                                callback: function(value, index, ticks) {
-                                     if (index >= weekLabels.length) return '';
-                                    const currentMonth = weekLabels[index].split(' ')[0];
-                                    const prevMonth = index > 0 ? weekLabels[index - 1].split(' ')[0] : '';
-                                    if (currentMonth !== prevMonth) {
-                                        return currentMonth;
-                                    }
-                                    return '';
-                                }
-                            },
-                             grid: {
-                                drawOnChartArea: false,
-                             }
-                        },
-                        xAxis2: {
-                            type: 'linear',
-                            position: 'top',
-                             min: -0.5,
-                            max: weekLabels.length - 0.5,
-                            ticks: {
-                                 stepSize: 1,
-                                callback: function(value, index, ticks) {
-                                     const label = weekLabels[index] || '';
-                                    return label.split(' ')[1] || '';
-                                }
-                            },
-                            grid: {
-                                color: 'rgba(0,0,0,0.05)'
-                            }
-                        },
-                        y: {
-                            grid: {
-                                display: false
-                            }
-                        }
-                    }
-                }
-            });
-
-            function updateChart(filter) {
-                let filteredData;
-                if (filter === 'all' || filter.startsWith('phase')) {
-                    if (filter === 'all') {
-                        filteredData = [...timelineData.all, ...timelineData.tasks].sort((a,b) => a.start - b.start);
-                    } else {
-                        const phaseFilter = parseInt(filter.replace('phase', ''));
-                        filteredData = timelineData.tasks.filter(task => task.phase === phaseFilter);
-                    }
-                } else { // Filter by member
-                    filteredData = timelineData.tasks.filter(task => task.member === filter);
-                }
-
-                ganttChart.data.labels = filteredData.map(d => {
-                    if (d.member) {
-                        return `${memberEmojiMap[d.member]} ${d.label}`;
-                    }
-                    return d.label;
-                });
-
-                ganttChart.data.datasets = [{
-                    data: filteredData.map(d => [d.start, d.end + 1]),
-                    backgroundColor: filteredData.map(d => d.member ? memberColorMap[d.member] : d.color),
-                    barPercentage: 0.6,
-                    borderRadius: 4
-                }];
-                ganttChart.update();
-
-                document.querySelectorAll('.btn').forEach(b => b.classList.remove('active', 'btn-primary'));
-                document.querySelectorAll('.btn').forEach(b => b.classList.add('btn-secondary'));
-                document.getElementById(`filter-${filter}`).classList.add('active', 'btn-primary');
-                document.getElementById(`filter-${filter}`).classList.remove('btn-secondary');
-            }
             
             const roadmapFilters = document.getElementById('roadmap');
             roadmapFilters.addEventListener('click', (e) => {
@@ -502,20 +559,128 @@
                 updateChart(filterId);
             });
 
-            updateChart('all');
+            // Modal and Form Logic
+            const modal = document.getElementById('task-modal');
+            const addTaskBtn = document.getElementById('add-task-btn');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const taskForm = document.getElementById('task-form');
+            const memberSelect = document.getElementById('task-member');
+            const deleteTaskBtn = document.getElementById('delete-task-btn');
+
+            teamData.forEach(member => {
+                const option = document.createElement('option');
+                option.value = member.id;
+                option.textContent = `${member.emoji} ${member.name}`;
+                memberSelect.appendChild(option);
+            });
+
+            const showModal = (task = null) => {
+                taskForm.reset();
+                if (task) {
+                    document.getElementById('modal-title').textContent = '업무 수정';
+                    document.getElementById('task-id').value = task.id;
+                    document.getElementById('task-label').value = task.label;
+                    document.getElementById('task-member').value = task.member;
+                    document.getElementById('task-start').value = task.startDate;
+                    document.getElementById('task-end').value = task.endDate;
+                    document.getElementById('task-phase').value = task.phase;
+                    deleteTaskBtn.classList.remove('hidden');
+                } else {
+                    document.getElementById('modal-title').textContent = '업무 추가';
+                    document.getElementById('task-id').value = '';
+                    deleteTaskBtn.classList.add('hidden');
+                }
+                modal.classList.remove('hidden');
+            };
+
+            const hideModal = () => modal.classList.add('hidden');
             
-            const navLinks = document.querySelectorAll('.nav-link');
+            addTaskBtn.addEventListener('click', () => showModal());
+            closeModalBtn.addEventListener('click', hideModal);
+
+            taskForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const id = document.getElementById('task-id').value;
+                const startDate = document.getElementById('task-start').value;
+                const endDate = document.getElementById('task-end').value;
+
+                const taskData = {
+                    label: document.getElementById('task-label').value,
+                    member: document.getElementById('task-member').value,
+                    phase: document.getElementById('task-phase').value,
+                    startDate: startDate,
+                    endDate: endDate,
+                    start: dateToWeekIndex(startDate),
+                    end: dateToWeekIndex(endDate),
+                };
+
+                try {
+                    if (id) {
+                        await setDoc(doc(taskCollection, id), taskData);
+                    } else {
+                        await addDoc(taskCollection, taskData);
+                    }
+                    hideModal();
+                } catch(error) {
+                    console.error("저장 오류:", error);
+                }
+            });
+
+            deleteTaskBtn.addEventListener('click', async () => {
+                const id = document.getElementById('task-id').value;
+                if(id && confirm('이 업무를 정말 삭제하시겠습니까?')) {
+                     try {
+                        await deleteDoc(doc(taskCollection, id));
+                        hideModal();
+                    } catch(error) {
+                        console.error("삭제 오류:", error);
+                    }
+                }
+            });
+
+            ganttChart.canvas.onclick = (evt) => {
+                const points = ganttChart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, true);
+                if (points.length) {
+                    const firstPoint = points[0];
+                    const label = ganttChart.data.labels[firstPoint.index];
+                    const taskToEdit = allTasks.find(t => `${memberEmojiMap[t.member]} ${t.label}` === label);
+                    if (taskToEdit) {
+                        showModal(taskToEdit);
+                    }
+                }
+            };
+            
+            // Tab switching logic for Setup Section
+            const setupTabContainer = document.querySelector('#setup .flex.justify-center');
+            const setupPanels = document.querySelectorAll('#setup .tab-panel');
+
+            setupTabContainer.addEventListener('click', (e) => {
+                if (e.target.tagName !== 'BUTTON') return;
+                
+                setupTabContainer.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                setupPanels.forEach(panel => panel.classList.add('hidden'));
+
+                e.target.classList.add('active');
+                if (e.target.id === 'tab-may-initial') {
+                    document.getElementById('tab-panel-may-initial').classList.remove('hidden');
+                } else if (e.target.id === 'tab-may-final') {
+                    document.getElementById('tab-panel-may-final').classList.remove('hidden');
+                } else if (e.target.id === 'tab-oct') {
+                    document.getElementById('tab-panel-oct').classList.remove('hidden');
+                }
+            });
+
+
+             const navLinks = document.querySelectorAll('.nav-link');
             const sections = document.querySelectorAll('main section');
 
             window.addEventListener('scroll', () => {
                 let current = '';
                 sections.forEach(section => {
-                    const sectionTop = section.offsetTop;
-                    if (pageYOffset >= sectionTop - 80) {
+                    if (pageYOffset >= section.offsetTop - 80) {
                         current = section.getAttribute('id');
                     }
                 });
-                
                 navLinks.forEach(link => {
                     link.classList.remove('active');
                     if (link.getAttribute('href').includes(current)) {
@@ -527,32 +692,123 @@
             navLinks.forEach(link => {
                 link.addEventListener('click', (e) => {
                     e.preventDefault();
-                    document.querySelector(link.getAttribute('href')).scrollIntoView({
-                        behavior: 'smooth'
-                    });
+                    document.querySelector(link.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
                 });
             });
+            
+            teamCardsContainer.addEventListener('click', (e) => {
+                const card = e.target.closest('.member-card');
+                if (!card) return;
 
-            const tabBtn1 = document.getElementById('tab-table1');
-            const tabBtn2 = document.getElementById('tab-table2');
-            const tabPanel1 = document.getElementById('tab-panel-table1');
-            const tabPanel2 = document.getElementById('tab-panel-table2');
+                const memberId = card.dataset.memberId;
+                const member = teamData.find(m => m.id === memberId);
 
-            tabBtn1.addEventListener('click', () => {
-                tabPanel1.classList.remove('hidden');
-                tabPanel2.classList.add('hidden');
-                tabBtn1.classList.add('active');
-                tabBtn2.classList.remove('active');
+                document.querySelectorAll('.member-card').forEach(c => c.style.borderColor = 'transparent');
+                card.style.borderColor = member.color.replace('0.7', '1');
+                
+                teamDetailsContainer.innerHTML = `
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-2" style="border-color: ${member.color.replace('0.7', '0.2')}">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="text-lg font-bold mb-2 text-gray-800">프리 프로덕션 (준비 단계)</h4>
+                                <ul class="space-y-2 list-disc list-inside text-gray-700">
+                                   ${member.pre_tasks.map(task => `<li>${task}</li>`).join('')}
+                                </ul>
+                            </div>
+                             <div>
+                                <h4 class="text-lg font-bold mb-2 text-gray-800">프로덕션 (현장 실행)</h4>
+                                <ul class="space-y-2 list-disc list-inside text-gray-700">
+                                   ${member.prod_tasks.map(task => `<li>${task}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            const viewPersonTab = document.getElementById('view-by-person-tab');
+            const viewPreProdTab = document.getElementById('view-by-pre-prod-tab');
+            const viewProdTab = document.getElementById('view-by-prod-tab');
+            const personPanel = document.getElementById('view-panel-person');
+            const preProdPanel = document.getElementById('view-panel-pre-prod');
+            const prodPanel = document.getElementById('view-panel-prod');
+            
+            function renderPhaseView(panel, taskType) {
+                panel.innerHTML = '';
+                teamData.forEach(member => {
+                    const memberEl = document.createElement('div');
+                    memberEl.className = 'p-4 rounded-lg';
+                    memberEl.style.backgroundColor = member.color.replace('0.7', '0.1');
+                    const tasks = member[taskType].map(task => `<li>${task}</li>`).join('');
+                    memberEl.innerHTML = `
+                         <h4 class="text-lg font-bold mb-2 flex items-center" style="color: ${member.color.replace('0.7', '1')}">
+                            <span class="text-2xl mr-2">${member.emoji}</span>
+                            ${member.name}
+                        </h4>
+                        <ul class="space-y-2 list-disc list-inside text-gray-700 pl-4">${tasks}</ul>
+                    `;
+                    panel.appendChild(memberEl);
+                });
+            }
+
+            viewPersonTab.addEventListener('click', () => {
+                personPanel.classList.remove('hidden');
+                preProdPanel.classList.add('hidden');
+                prodPanel.classList.add('hidden');
+                viewPersonTab.classList.add('active');
+                viewPreProdTab.classList.remove('active');
+                viewProdTab.classList.remove('active');
+            });
+            viewPreProdTab.addEventListener('click', () => {
+                personPanel.classList.add('hidden');
+                preProdPanel.classList.remove('hidden');
+                prodPanel.classList.add('hidden');
+                viewPersonTab.classList.remove('active');
+                viewPreProdTab.classList.add('active');
+                viewProdTab.classList.remove('active');
+                renderPhaseView(preProdPanel, 'pre_tasks');
+            });
+            viewProdTab.addEventListener('click', () => {
+                personPanel.classList.add('hidden');
+                preProdPanel.classList.add('hidden');
+                prodPanel.classList.remove('hidden');
+                viewPersonTab.classList.remove('active');
+                viewPreProdTab.classList.remove('active');
+                viewProdTab.classList.add('active');
+                renderPhaseView(prodPanel, 'prod_tasks');
             });
             
-            tabBtn2.addEventListener('click', () => {
-                tabPanel2.classList.remove('hidden');
-                tabPanel1.classList.add('hidden');
-                tabBtn2.classList.add('active');
-                tabBtn1.classList.remove('active');
+            // Video Modal Logic
+            const kickEdgeCard = document.querySelector('#strategy');
+            kickEdgeCard.addEventListener('click', (e) => {
+                 const button = e.target.closest('.kick-edge-ref-btn');
+                 if(button) {
+                    const videoModal = document.getElementById('video-modal');
+                    const youtubeIframe = document.getElementById('youtube-iframe');
+                    const url = button.dataset.url;
+                    youtubeIframe.src = url;
+                    videoModal.classList.remove('hidden');
+                }
             });
+            
+            const closeVideoModalBtn = document.getElementById('close-video-modal');
+            const videoModal = document.getElementById('video-modal');
+            const youtubeIframe = document.getElementById('youtube-iframe');
+
+            const closeVideoModal = () => {
+                videoModal.classList.add('hidden');
+                youtubeIframe.src = ""; // Stop video playback
+            };
+
+            closeVideoModalBtn.addEventListener('click', closeVideoModal);
+            videoModal.addEventListener('click', (e) => {
+                if (e.target === videoModal) {
+                    closeVideoModal();
+                }
+            });
+
+            initFirebase(); // Call initFirebase after all functions and variables are defined.
         });
     </script>
 </body>
 </html>
-�
