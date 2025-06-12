@@ -15,24 +15,27 @@
     <script src="https://cdn.jsdelivr.net/npm/date-fns"></script>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, addDoc, setDoc, deleteDoc, doc, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        window.firebase = {
-            initializeApp,
-            getAuth,
-            signInAnonymously,
-            signInWithCustomToken,
-            getFirestore,
-            collection,
-            onSnapshot,
-            addDoc,
-            setDoc,
-            deleteDoc,
-            doc,
-            getDocs,
-            writeBatch
-        };
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
+      // TODO: Add SDKs for Firebase products that you want to use
+      // https://firebase.google.com/docs/web/setup#available-libraries
+    
+      // Your web app's Firebase configuration
+      // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+      const firebaseConfig = {
+        apiKey: "AIzaSyBqJL9rF1UFH2F9glfYQixAiOMxD0aooPg",
+        authDomain: "ggp-camera-plan.firebaseapp.com",
+        projectId: "ggp-camera-plan",
+        storageBucket: "ggp-camera-plan.firebasestorage.app",
+        messagingSenderId: "108052983282",
+        appId: "1:108052983282:web:39f8b769a628f81c7d8f6b",
+        measurementId: "G-M2NDS5T0GF"
+      };
+    
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
     </script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
