@@ -15,27 +15,24 @@
     <script src="https://cdn.jsdelivr.net/npm/date-fns"></script>
 
     <script type="module">
-      // Import the functions you need from the SDKs you need
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-      import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
-      // TODO: Add SDKs for Firebase products that you want to use
-      // https://firebase.google.com/docs/web/setup#available-libraries
-    
-      // Your web app's Firebase configuration
-      // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-      const firebaseConfig = {
-        apiKey: "AIzaSyBqJL9rF1UFH2F9glfYQixAiOMxD0aooPg",
-        authDomain: "ggp-camera-plan.firebaseapp.com",
-        projectId: "ggp-camera-plan",
-        storageBucket: "ggp-camera-plan.firebasestorage.app",
-        messagingSenderId: "108052983282",
-        appId: "1:108052983282:web:39f8b769a628f81c7d8f6b",
-        measurementId: "G-M2NDS5T0GF"
-      };
-    
-      // Initialize Firebase
-      const app = initializeApp(firebaseConfig);
-      const analytics = getAnalytics(app);
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, addDoc, setDoc, deleteDoc, doc, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        window.firebase = {
+            initializeApp,
+            getAuth,
+            signInAnonymously,
+            signInWithCustomToken,
+            getFirestore,
+            collection,
+            onSnapshot,
+            addDoc,
+            setDoc,
+            deleteDoc,
+            doc,
+            getDocs,
+            writeBatch
+        };
     </script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -172,7 +169,7 @@
                         <li>📹 보드 캠 (FR7) x 1</li>
                         <li>📷 탑 캠 (Overhead) x 1</li>
                         <li>🎥 프리 캠 (Freelance) x 1</li>
-                        <li>🎥 풀 샷 캠 (Full Shot) x 1</li>
+                        <li>� 풀 샷 캠 (Full Shot) x 1</li>
                         <li class="font-bold col-span-full sm:col-auto">총 8대 / 테이블</li>
                     </ul>
                 </div>
@@ -383,6 +380,7 @@
         
         const projectStartDate = new Date('2025-06-09');
         function dateToWeekIndex(dateStr) {
+            if (!dateStr) return 0;
             const targetDate = new Date(dateStr);
             const diffTime = targetDate - projectStartDate;
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -405,20 +403,18 @@
                 { phase: '2', label: 'A컷 스타일가이드 V1.0 최종화', member: 'kai', startDate: '2025-08-19', endDate: '2025-08-30'},
                 { phase: '2', label: 'R&D: 조명 시스템 설계', member: 'matthew', startDate: '2025-07-08', endDate: '2025-07-19'},
                 { phase: '2', label: 'FR7 및 고정캠 최적화 R&D', member: 'matthew', startDate: '2025-07-22', endDate: '2025-08-02'},
-                { phase: 2, label: '사이프러스 물류/운송 계획', member: 'matthew', start: 8, end: 10},
-                { phase: 2, label: '스위처 개발 및 GFX/아카이빙 연동', member: 'trey', start: 9, end: 10},
-                { phase: 3, label: '리허설 총괄', member: 'aiden', start: 11, end: 14},
-                { phase: 3, label: '리허설 (미학/연출 점검)', member: 'kai', start: 11, end: 14},
-                { phase: 3, label: '리허설 (기술 지원)', member: 'matthew', start: 11, end: 14},
-                { phase: 3, label: '리허설 (스위처 통합 테스트)', member: 'trey', start: 11, end: 14},
-                { phase: 4, label: '최종 패킹 및 출국 준비', member: 'aiden', start: 15, end: 15},
-                { phase: 4, label: '최종 패킹 및 출국 준비', member: 'kai', start: 15, end: 15},
-                { phase: 4, label: '최종 패킹 및 출국 준비', member: 'matthew', start: 15, end: 15},
-                { phase: 4, label: '최종 패킹 및 출국 준비', member: 'trey', start: 15, end: 15},
-            ].map(task => ({ ...task, start: dateToWeekIndex(task.startDate), end: dateToWeekIndex(task.endDate) }));
+                { phase: '2', label: '사이프러스 물류/운송 계획', member: 'matthew', startDate: '2025-08-05', endDate: '2025-08-30'},
+                { phase: '2', label: '스위처 개발 및 GFX/아카이빙 연동', member: 'trey', startDate: '2025-08-19', endDate: '2025-08-30'},
+                { phase: '3', label: '리허설 총괄', member: 'aiden', startDate: '2025-09-02', endDate: '2025-09-27'},
+                { phase: '3', label: '리허설 (미학/연출 점검)', member: 'kai', startDate: '2025-09-02', endDate: '2025-09-27'},
+                { phase: '3', label: '리허설 (기술 지원)', member: 'matthew', startDate: '2025-09-02', endDate: '2025-09-27'},
+                { phase: '3', label: '리허설 (스위처 통합 테스트)', member: 'trey', startDate: '2025-09-02', endDate: '2025-09-27'},
+                { phase: '4', label: '최종 패킹 및 출국 준비', member: 'aiden', startDate: '2025-09-30', endDate: '2025-10-04'},
+                { phase: '4', label: '최종 패킹 및 출국 준비', member: 'kai', startDate: '2025-09-30', endDate: '2025-10-04'},
+                { phase: '4', label: '최종 패킹 및 출국 준비', member: 'matthew', startDate: '2025-09-30', endDate: '2025-10-04'},
+                { phase: '4', label: '최종 패킹 및 출국 준비', member: 'trey', startDate: '2025-09-30', endDate: '2025-10-04'},
+        ].map(task => ({ ...task, start: dateToWeekIndex(task.startDate), end: dateToWeekIndex(task.endDate) }));
 
-
-        // Function to update the chart
         function updateChart(filter) {
             currentFilter = filter;
             let filteredTasks;
@@ -449,8 +445,70 @@
             document.getElementById(`filter-${filter}`).classList.remove('btn-secondary');
         }
         
+        async function initFirebase() {
+            try {
+                const firebaseConfig = JSON.parse(__firebase_config);
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                userId = auth.currentUser?.uid;
+                
+                taskCollection = collection(db, 'artifacts', appId, 'public', 'data', 'roadmap_tasks');
+                
+                const querySnapshot = await getDocs(taskCollection);
+                if (querySnapshot.empty) {
+                    const batch = writeBatch(db);
+                    initialTasks.forEach(task => {
+                        const newDocRef = doc(taskCollection);
+                        batch.set(newDocRef, task);
+                    });
+                    await batch.commit();
+                }
+
+                fetchTasks();
+
+            } catch (error) {
+                console.error("Firebase 초기화 오류. 정적 데이터로 대체합니다:", error);
+                allTasks = initialTasks;
+                updateChart('all');
+            }
+        }
+        
+        function fetchTasks() {
+            onSnapshot(taskCollection, (snapshot) => {
+                allTasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                updateChart(currentFilter);
+            }, (error) => {
+                console.error("데이터 가져오기 오류. 정적 데이터로 대체합니다:", error);
+                allTasks = initialTasks;
+                updateChart('all');
+            });
+        }
+        
         document.addEventListener('DOMContentLoaded', () => {
             initFirebase();
+            
+            const teamCardsContainer = document.getElementById('team-cards-container');
+            const teamDetailsContainer = document.getElementById('team-details-container');
+
+            teamData.forEach(member => {
+                const card = document.createElement('div');
+                card.className = `card p-6 rounded-xl text-center cursor-pointer member-card border-2 border-transparent`;
+                card.style.backgroundColor = member.color.replace('0.7', '0.1');
+                card.dataset.memberId = member.id;
+                card.innerHTML = `
+                    <div class="text-5xl mb-3">${member.emoji}</div>
+                    <h4 class="text-xl font-bold text-gray-800">${member.name}</h4>
+                    <p class="font-semibold" style="color: ${member.color.replace('0.7', '1')}">${member.role}</p>
+                `;
+                teamCardsContainer.appendChild(card);
+            });
             
             const ctx = document.getElementById('ganttChart').getContext('2d');
             ganttChart = new Chart(ctx, {
@@ -503,58 +561,6 @@
                 }
             });
 
-            async function initFirebase() {
-                try {
-                    const firebaseConfig = JSON.parse(__firebase_config);
-                    const app = initializeApp(firebaseConfig);
-                    db = getFirestore(app);
-                    auth = getAuth(app);
-                    
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
-                    userId = auth.currentUser?.uid;
-                    
-                    taskCollection = collection(db, 'artifacts', appId, 'public', 'data', 'roadmap_tasks');
-                    
-                    const querySnapshot = await getDocs(taskCollection);
-                    if (querySnapshot.empty) {
-                        const batch = writeBatch(db);
-                        initialTasks.forEach(task => {
-                            const newDocRef = doc(taskCollection);
-                            batch.set(newDocRef, task);
-                        });
-                        await batch.commit();
-                    }
-
-                    fetchTasks();
-
-                } catch (error) {
-                    console.error("Firebase 초기화 오류:", error);
-                    // Fallback to static data if firebase fails
-                    allTasks = initialTasks;
-                    updateChart('all');
-                }
-            }
-            
-            const teamCardsContainer = document.getElementById('team-cards-container');
-            const teamDetailsContainer = document.getElementById('team-details-container');
-
-            teamData.forEach(member => {
-                const card = document.createElement('div');
-                card.className = `card p-6 rounded-xl text-center cursor-pointer member-card border-2 border-transparent`;
-                card.style.backgroundColor = member.color.replace('0.7', '0.1');
-                card.dataset.memberId = member.id;
-                card.innerHTML = `
-                    <div class="text-5xl mb-3">${member.emoji}</div>
-                    <h4 class="text-xl font-bold text-gray-800">${member.name}</h4>
-                    <p class="font-semibold" style="color: ${member.color.replace('0.7', '1')}">${member.role}</p>
-                `;
-                teamCardsContainer.appendChild(card);
-            });
-            
             const roadmapFilters = document.getElementById('roadmap');
             roadmapFilters.addEventListener('click', (e) => {
                 if (e.target.tagName !== 'BUTTON') return;
@@ -815,3 +821,4 @@
     </script>
 </body>
 </html>
+�
