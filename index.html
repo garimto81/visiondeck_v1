@@ -20,7 +20,6 @@
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
         import { getFirestore, collection, onSnapshot, addDoc, doc, setDoc, deleteDoc, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
         
-        // Make Firebase functions globally available for the main script
         window.firebase = {
             initializeApp, getAuth, signInAnonymously, 
             getFirestore, collection, onSnapshot, addDoc, doc, setDoc, deleteDoc, getDocs, writeBatch
@@ -242,7 +241,6 @@
                     <button id="filter-matthew" class="btn btn-secondary px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm">🛠️ Matthew</button>
                     <button id="filter-trey" class="btn btn-secondary px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm">🕹️ Trey</button>
                 </div>
-                 <div id="task-list-container" class="mb-4"></div>
                 <div class="chart-container">
                     <canvas id="ganttChart"></canvas>
                 </div>
@@ -313,11 +311,10 @@
 
 
     <script type="module">
-        const { initializeApp } = window.firebase;
-        const { getAuth, signInAnonymously } = window.firebase;
-        const { getFirestore, collection, onSnapshot, addDoc, doc, setDoc, deleteDoc, getDocs, writeBatch } = window.firebase;
-        
         document.addEventListener('DOMContentLoaded', () => {
+            const { initializeApp } = window.firebase;
+            const { getAuth, signInAnonymously } = window.firebase;
+            const { getFirestore, collection, onSnapshot, addDoc, doc, setDoc, deleteDoc, getDocs, writeBatch } = window.firebase;
             
             let db, auth, taskCollection;
             let allTasks = [];
@@ -379,7 +376,7 @@
             }
             
             async function initApp() {
-                 const firebaseConfig = { apiKey: "AIzaSyBqJL9rF1UFH2F9glfYQixAiOMxD0aooPg", authDomain: "ggp-camera-plan.firebaseapp.com", projectId: "ggp-camera-plan", storageBucket: "ggp-camera-plan.appspot.com", messagingSenderId: "108052983282", appId: "1:108052983282:web:39f8b769a628f81c7d8f6b" };
+                const firebaseConfig = { apiKey: "AIzaSyBqJL9rF1UFH2F9glfYQixAiOMxD0aooPg", authDomain: "ggp-camera-plan.firebaseapp.com", projectId: "ggp-camera-plan", storageBucket: "ggp-camera-plan.appspot.com", messagingSenderId: "108052983282", appId: "1:108052983282:web:39f8b769a628f81c7d8f6b" };
                 try {
                     const app = initializeApp(firebaseConfig);
                     db = getFirestore(app);
@@ -405,17 +402,15 @@
                         allTasks = initialTasks;
                         updateChart('all');
                     });
-
                 } catch (error) {
                     console.error("Firebase 초기화 오류:", error);
                     allTasks = initialTasks;
                     updateChart('all');
                 }
             }
-
-            function setupPage() {
+            
+            function setupUI() {
                 const teamCardsContainer = document.getElementById('team-cards-container');
-                const teamDetailsContainer = document.getElementById('team-details-container');
                 teamData.forEach(member => {
                     const card = document.createElement('div');
                     card.className = `card p-6 rounded-xl text-center cursor-pointer member-card border-2 border-transparent`;
@@ -424,7 +419,7 @@
                     card.innerHTML = `<div class="text-5xl mb-3">${member.emoji}</div><h4 class="text-xl font-bold text-gray-800">${member.name}</h4><p class="font-semibold" style="color: ${member.color.replace('0.7', '1')}">${member.role}</p>`;
                     teamCardsContainer.appendChild(card);
                 });
-                
+
                 const ctx = document.getElementById('ganttChart').getContext('2d');
                 ganttChart = new Chart(ctx, { 
                     type: 'bar', data: { labels: [], datasets: [] },
@@ -446,7 +441,9 @@
                         }
                     }
                 });
+            }
 
+            function setupEventListeners() {
                 const roadmapFilters = document.getElementById('roadmap');
                 roadmapFilters.addEventListener('click', (e) => {
                     if (e.target.tagName !== 'BUTTON') return;
@@ -454,76 +451,50 @@
                     updateChart(filterId);
                 });
 
-                const modal = document.getElementById('task-modal');
-                const addTaskBtn = document.getElementById('add-task-btn');
-                const closeModalBtn = document.getElementById('close-modal-btn');
-                const taskForm = document.getElementById('task-form');
-                const memberSelect = document.getElementById('task-member');
-                const deleteTaskBtn = document.getElementById('delete-task-btn');
-
-                teamData.forEach(member => {
-                    const option = document.createElement('option');
-                    option.value = member.id;
-                    option.textContent = `${member.emoji} ${member.name}`;
-                    memberSelect.appendChild(option);
+                const teamCardsContainer = document.getElementById('team-cards-container');
+                const teamDetailsContainer = document.getElementById('team-details-container');
+                teamCardsContainer.addEventListener('click', (e) => {
+                    const card = e.target.closest('.member-card');
+                    if (!card) return;
+                    const memberId = card.dataset.memberId;
+                    const member = teamData.find(m => m.id === memberId);
+                    document.querySelectorAll('.member-card').forEach(c => c.style.borderColor = 'transparent');
+                    card.style.borderColor = member.color.replace('0.7', '1');
+                    teamDetailsContainer.innerHTML = `<div class="bg-white p-6 rounded-xl shadow-lg border-2" style="border-color: ${member.color.replace('0.7', '0.2')}"><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div><h4 class="text-lg font-bold mb-2 text-gray-800">프리 프로덕션 (준비 단계)</h4><ul class="space-y-2 list-disc list-inside text-gray-700">${member.pre_tasks.map(task => `<li>${task}</li>`).join('')}</ul></div><div><h4 class="text-lg font-bold mb-2 text-gray-800">프로덕션 (현장 실행)</h4><ul class="space-y-2 list-disc list-inside text-gray-700">${member.prod_tasks.map(task => `<li>${task}</li>`).join('')}</ul></div></div></div>`;
                 });
 
-                const showModal = (task = null) => {
-                    taskForm.reset();
-                    if (task) {
-                        document.getElementById('modal-title').textContent = '업무 수정';
-                        document.getElementById('task-id').value = task.id;
-                        document.getElementById('task-label').value = task.label;
-                        document.getElementById('task-member').value = task.member;
-                        document.getElementById('task-start').value = task.startDate;
-                        document.getElementById('task-end').value = task.endDate;
-                        document.getElementById('task-phase').value = task.phase;
-                        deleteTaskBtn.classList.remove('hidden');
-                    } else {
-                        document.getElementById('modal-title').textContent = '업무 추가';
-                        document.getElementById('task-id').value = '';
-                        deleteTaskBtn.classList.add('hidden');
-                    }
-                    modal.classList.remove('hidden');
-                };
-
-                const hideModal = () => modal.classList.add('hidden');
-                
-                addTaskBtn.addEventListener('click', () => showModal());
-                closeModalBtn.addEventListener('click', hideModal);
-
-                taskForm.addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    if (!taskCollection) { console.error("DB not initialized"); return; }
-                    const id = document.getElementById('task-id').value;
-                    const startDate = document.getElementById('task-start').value;
-                    const endDate = document.getElementById('task-end').value;
-                    const taskData = { label: document.getElementById('task-label').value, member: document.getElementById('task-member').value, phase: document.getElementById('task-phase').value, startDate: startDate, endDate: endDate, start: dateToWeekIndex(startDate), end: dateToWeekIndex(endDate),};
-                    try {
-                        if (id) { await setDoc(doc(taskCollection, id), taskData); } 
-                        else { await addDoc(taskCollection, taskData); }
-                        hideModal();
-                    } catch(error) { console.error("저장 오류:", error); }
+                const viewPersonTab = document.getElementById('view-by-person-tab');
+                const viewPreProdTab = document.getElementById('view-by-pre-prod-tab');
+                const viewProdTab = document.getElementById('view-by-prod-tab');
+                const personPanel = document.getElementById('view-panel-person');
+                const preProdPanel = document.getElementById('view-panel-pre-prod');
+                const prodPanel = document.getElementById('view-panel-prod');
+                function renderPhaseView(panel, taskType) {
+                    panel.innerHTML = '';
+                    teamData.forEach(member => {
+                        const memberEl = document.createElement('div');
+                        memberEl.className = 'p-4 rounded-lg';
+                        memberEl.style.backgroundColor = member.color.replace('0.7', '0.1');
+                        const tasks = member[taskType].map(task => `<li>${task}</li>`).join('');
+                        memberEl.innerHTML = `<h4 class="text-lg font-bold mb-2 flex items-center" style="color: ${member.color.replace('0.7', '1')}"><span class="text-2xl mr-2">${member.emoji}</span>${member.name}</h4><ul class="space-y-2 list-disc list-inside text-gray-700 pl-4">${tasks}</ul>`;
+                        panel.appendChild(memberEl);
+                    });
+                }
+                viewPersonTab.addEventListener('click', () => {
+                    personPanel.classList.remove('hidden'); preProdPanel.classList.add('hidden'); prodPanel.classList.add('hidden');
+                    viewPersonTab.classList.add('active'); viewPreProdTab.classList.remove('active'); viewProdTab.classList.remove('active');
+                });
+                viewPreProdTab.addEventListener('click', () => {
+                    personPanel.classList.add('hidden'); preProdPanel.classList.remove('hidden'); prodPanel.classList.add('hidden');
+                    viewPersonTab.classList.remove('active'); viewPreProdTab.classList.add('active'); viewProdTab.classList.remove('active');
+                    renderPhaseView(preProdPanel, 'pre_tasks');
+                });
+                viewProdTab.addEventListener('click', () => {
+                    personPanel.classList.add('hidden'); preProdPanel.classList.add('hidden'); prodPanel.classList.remove('hidden');
+                    viewPersonTab.classList.remove('active'); viewPreProdTab.classList.remove('active'); viewProdTab.classList.add('active');
+                    renderPhaseView(prodPanel, 'prod_tasks');
                 });
 
-                deleteTaskBtn.addEventListener('click', async () => {
-                    const id = document.getElementById('task-id').value;
-                    if(id && confirm('이 업무를 정말 삭제하시겠습니까?')) {
-                         try { await deleteDoc(doc(taskCollection, id)); hideModal(); } 
-                         catch(error) { console.error("삭제 오류:", error); }
-                    }
-                });
-
-                ganttChart.canvas.onclick = (evt) => {
-                    const points = ganttChart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, true);
-                    if (points.length) {
-                        const firstPoint = points[0];
-                        const label = ganttChart.data.labels[firstPoint.index];
-                        const taskToEdit = allTasks.find(t => `${memberEmojiMap[t.member]} ${t.label}` === label);
-                        if (taskToEdit) showModal(taskToEdit);
-                    }
-                };
-                
                 const setupTabContainer = document.querySelector('#setup .flex.justify-center');
                 const setupPanels = document.querySelectorAll('#setup .tab-panel');
                 setupTabContainer.addEventListener('click', (e) => {
@@ -535,6 +506,21 @@
                     else if (e.target.id === 'tab-may-final') document.getElementById('tab-panel-may-final').classList.remove('hidden');
                     else if (e.target.id === 'tab-oct') document.getElementById('tab-panel-oct').classList.remove('hidden');
                 });
+
+                const videoModal = document.getElementById('video-modal');
+                const closeVideoModalBtn = document.getElementById('close-video-modal');
+                const youtubeIframe = document.getElementById('youtube-iframe');
+                document.querySelector('#strategy').addEventListener('click', (e) => {
+                     const button = e.target.closest('.kick-edge-ref-btn');
+                     if(button) {
+                        const url = button.dataset.url;
+                        youtubeIframe.src = url;
+                        videoModal.classList.remove('hidden');
+                    }
+                });
+                const closeVideoModal = () => { videoModal.classList.add('hidden'); youtubeIframe.src = ""; };
+                closeVideoModalBtn.addEventListener('click', closeVideoModal);
+                videoModal.addEventListener('click', (e) => { if (e.target === videoModal) closeVideoModal(); });
 
                 const navLinks = document.querySelectorAll('.nav-link');
                 const sections = document.querySelectorAll('main section');
@@ -555,84 +541,11 @@
                         document.querySelector(link.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
                     });
                 });
-                
-                teamCardsContainer.addEventListener('click', (e) => {
-                    const card = e.target.closest('.member-card');
-                    if (!card) return;
-                    const memberId = card.dataset.memberId;
-                    const member = teamData.find(m => m.id === memberId);
-                    document.querySelectorAll('.member-card').forEach(c => c.style.borderColor = 'transparent');
-                    card.style.borderColor = member.color.replace('0.7', '1');
-                    teamDetailsContainer.innerHTML = `
-                        <div class="bg-white p-6 rounded-xl shadow-lg border-2" style="border-color: ${member.color.replace('0.7', '0.2')}">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div><h4 class="text-lg font-bold mb-2 text-gray-800">프리 프로덕션 (준비 단계)</h4><ul class="space-y-2 list-disc list-inside text-gray-700">${member.pre_tasks.map(task => `<li>${task}</li>`).join('')}</ul></div>
-                                <div><h4 class="text-lg font-bold mb-2 text-gray-800">프로덕션 (현장 실행)</h4><ul class="space-y-2 list-disc list-inside text-gray-700">${member.prod_tasks.map(task => `<li>${task}</li>`).join('')}</ul></div>
-                            </div>
-                        </div>`;
-                });
-
-                const viewPersonTab = document.getElementById('view-by-person-tab');
-                const viewPreProdTab = document.getElementById('view-by-pre-prod-tab');
-                const viewProdTab = document.getElementById('view-by-prod-tab');
-                const personPanel = document.getElementById('view-panel-person');
-                const preProdPanel = document.getElementById('view-panel-pre-prod');
-                const prodPanel = document.getElementById('view-panel-prod');
-                
-                function renderPhaseView(panel, taskType) {
-                    panel.innerHTML = '';
-                    teamData.forEach(member => {
-                        const memberEl = document.createElement('div');
-                        memberEl.className = 'p-4 rounded-lg';
-                        memberEl.style.backgroundColor = member.color.replace('0.7', '0.1');
-                        const tasks = member[taskType].map(task => `<li>${task}</li>`).join('');
-                        memberEl.innerHTML = `<h4 class="text-lg font-bold mb-2 flex items-center" style="color: ${member.color.replace('0.7', '1')}"><span class="text-2xl mr-2">${member.emoji}</span>${member.name}</h4><ul class="space-y-2 list-disc list-inside text-gray-700 pl-4">${tasks}</ul>`;
-                        panel.appendChild(memberEl);
-                    });
-                }
-
-                viewPersonTab.addEventListener('click', () => {
-                    personPanel.classList.remove('hidden'); preProdPanel.classList.add('hidden'); prodPanel.classList.add('hidden');
-                    viewPersonTab.classList.add('active'); viewPreProdTab.classList.remove('active'); viewProdTab.classList.remove('active');
-                });
-                viewPreProdTab.addEventListener('click', () => {
-                    personPanel.classList.add('hidden'); preProdPanel.classList.remove('hidden'); prodPanel.classList.add('hidden');
-                    viewPersonTab.classList.remove('active'); viewPreProdTab.classList.add('active'); viewProdTab.classList.remove('active');
-                    renderPhaseView(preProdPanel, 'pre_tasks');
-                });
-                viewProdTab.addEventListener('click', () => {
-                    personPanel.classList.add('hidden'); preProdPanel.classList.add('hidden'); prodPanel.classList.remove('hidden');
-                    viewPersonTab.classList.remove('active'); viewPreProdTab.classList.remove('active'); viewProdTab.classList.add('active');
-                    renderPhaseView(prodPanel, 'prod_tasks');
-                });
-                
-                const strategySection = document.getElementById('strategy');
-                strategySection.addEventListener('click', (e) => {
-                     const button = e.target.closest('.kick-edge-ref-btn');
-                     if(button) {
-                        const videoModal = document.getElementById('video-modal');
-                        const youtubeIframe = document.getElementById('youtube-iframe');
-                        const url = button.dataset.url;
-                        youtubeIframe.src = url;
-                        videoModal.classList.remove('hidden');
-                    }
-                });
-                
-                const closeVideoModalBtn = document.getElementById('close-video-modal');
-                const videoModal = document.getElementById('video-modal');
-                const youtubeIframe = document.getElementById('youtube-iframe');
-
-                const closeVideoModal = () => {
-                    videoModal.classList.add('hidden');
-                    youtubeIframe.src = "";
-                };
-                closeVideoModalBtn.addEventListener('click', closeVideoModal);
-                videoModal.addEventListener('click', (e) => {
-                    if (e.target === videoModal) closeVideoModal();
-                });
             }
 
-            setupPage();
+            // Start the application
+            setupUI();
+            setupEventListeners();
             initApp();
         });
     </script>
