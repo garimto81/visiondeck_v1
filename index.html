@@ -799,16 +799,15 @@
                     // [FIX] Updated Firebase config placeholder for clarity.
                     // When deploying to a live server (like GitHub Pages),
                     // replace this placeholder with your actual Firebase project configuration object.
-                    const firebaseConfig = typeof __firebase_config !== 'undefined'
-                        ? JSON.parse(__firebase_config)
-                        : {
-                            apiKey: "YOUR_API_KEY",
-                            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-                            projectId: "YOUR_PROJECT_ID",
-                            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-                            messagingSenderId: "YOUR_SENDER_ID",
-                            appId: "YOUR_APP_ID"
-                        };
+                    const firebaseConfig = {
+                      apiKey: "AIzaSyBqJL9rF1UFH2F9glfYQixAiOMxD0aooPg",
+                      authDomain: "ggp-camera-plan.firebaseapp.com",
+                      projectId: "ggp-camera-plan",
+                      storageBucket: "ggp-camera-plan.firebasestorage.app",
+                      messagingSenderId: "108052983282",
+                      appId: "1:108052983282:web:39f8b769a628f81c7d8f6b",
+                      measurementId: "G-M2NDS5T0GF"
+                    };
 
                     const appId = typeof __app_id !== 'undefined' ? __app_id : 'ggp-plan-local-dev';
                     
