@@ -13,18 +13,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/date-fns"></script>
-
-    <script type="module">
-        // Firebase SDK imports
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, addDoc, doc, setDoc, deleteDoc, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
-        
-        window.firebase = {
-            initializeApp, getAuth, signInAnonymously, 
-            getFirestore, collection, onSnapshot, addDoc, doc, setDoc, deleteDoc, getDocs, writeBatch
-        };
-    </script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -42,7 +30,7 @@
         .btn-secondary:hover { background-color: #BDBDBD; }
         .btn.active { background-color: #8B4513; color: white; }
         .section-title::after { content: ''; display: block; width: 50px; height: 3px; background-color: #A0522D; margin-top: 8px; }
-        .chart-container { position: relative; width: 100%; max-width: 1200px; margin-left: auto; margin-right: auto; height: 500px; max-height: 70vh; }
+        .chart-container { position: relative; width: 100%; max-width: 1200px; margin-left: auto; margin-right: auto; height: 500px; max-height: 70vh; cursor: pointer; }
         .camera-icon { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
         .tab-btn { padding: 0.75rem 1.5rem; font-weight: 500; color: #6B7280; border-bottom: 3px solid transparent; transition: all 0.3s ease; }
         .tab-btn.active { color: #A0522D; border-bottom-color: #A0522D; }
@@ -138,14 +126,13 @@
                     <button id="tab-oct" class="tab-btn">10월 WSOP SC</button>
                 </div>
                 
-                <!-- 5월 MPP 초기 패널 -->
                 <div id="tab-panel-may-initial" class="tab-panel">
                      <p class="text-center font-semibold text-gray-700 mb-4">기본 8캠 시스템으로 안정적 운영에 집중</p>
                     <div class="relative max-w-4xl mx-auto aspect-[16/9] flex items-center justify-center p-4 sm:p-8">
                         <div class="absolute w-full h-full flex items-center justify-center">
-                             <div class="w-[60%] h-[55%] bg-gray-500 border-8 border-gray-700 rounded-[50%] flex items-center justify-center text-white font-bold relative">
+                            <div class="w-[60%] h-[55%] bg-gray-500 border-8 border-gray-700 rounded-[50%] flex items-center justify-center text-white font-bold relative">
                                 <div class="absolute bottom-2 bg-slate-900 px-4 py-1 rounded-md text-sm shadow-lg">Dealer</div>
-                                 <div class="absolute text-center"><div class="flex items-center gap-1 text-sm">📷<span class="hidden sm:inline">탑 캠</span></div><div class="flex items-center gap-1 text-sm">📹<span class="hidden sm:inline">보드 캠</span></div></div>
+                                <div class="absolute text-center"><div class="flex items-center gap-1 text-sm">📷<span class="hidden sm:inline">탑 캠</span></div><div class="flex items-center gap-1 text-sm">📹<span class="hidden sm:inline">보드 캠</span></div></div>
                             </div>
                         </div>
                         <div class="absolute top-[55%] left-0 text-center camera-icon"><div class="text-2xl sm:text-4xl text-yellow-400">📹</div><span class="text-xs font-semibold">FR7 #4</span></div>
@@ -165,14 +152,13 @@
                     </ul>
                 </div>
 
-                <!-- 5월 MPP 후기 패널 -->
                 <div id="tab-panel-may-final" class="tab-panel hidden">
                      <p class="text-center font-semibold text-gray-700 mb-4">인물 고정 캠 추가로 A컷 안정화</p>
                     <div class="relative max-w-4xl mx-auto aspect-[16/9] flex items-center justify-center p-4 sm:p-8">
                         <div class="absolute w-full h-full flex items-center justify-center">
-                             <div class="w-[60%] h-[55%] bg-gray-500 border-8 border-gray-700 rounded-[50%] flex items-center justify-center text-white font-bold relative">
+                            <div class="w-[60%] h-[55%] bg-gray-500 border-8 border-gray-700 rounded-[50%] flex items-center justify-center text-white font-bold relative">
                                 <div class="absolute bottom-2 bg-slate-900 px-4 py-1 rounded-md text-sm shadow-lg">Dealer</div>
-                                 <div class="absolute text-center"><div class="flex items-center gap-1 text-sm">📷<span class="hidden sm:inline">탑 캠</span></div><div class="flex items-center gap-1 text-sm">📹<span class="hidden sm:inline">보드 캠</span></div></div>
+                                <div class="absolute text-center"><div class="flex items-center gap-1 text-sm">📷<span class="hidden sm:inline">탑 캠</span></div><div class="flex items-center gap-1 text-sm">📹<span class="hidden sm:inline">보드 캠</span></div></div>
                             </div>
                         </div>
                         <div class="absolute top-[20%] left-[5%] text-center camera-icon"><div class="text-2xl sm:text-4xl text-gray-400">🎥</div><span class="text-xs font-semibold">인물 고정 캠</span></div>
@@ -194,12 +180,11 @@
                     </ul>
                 </div>
 
-                <!-- 10월 WSOP SC 패널 -->
                 <div id="tab-panel-oct" class="tab-panel hidden">
                     <p class="text-center font-semibold text-gray-700 mb-4">전체 FR7 시스템으로 업그레이드하여 퀄리티 표준화 (총 10캠)</p>
                      <div class="relative max-w-4xl mx-auto aspect-[16/9] flex items-center justify-center p-4 sm:p-8">
                         <div class="absolute w-full h-full flex items-center justify-center">
-                             <div class="w-[60%] h-[55%] bg-blue-800 border-8 border-yellow-800 rounded-[50%] flex items-center justify-center text-white font-bold relative">
+                            <div class="w-[60%] h-[55%] bg-blue-800 border-8 border-yellow-800 rounded-[50%] flex items-center justify-center text-white font-bold relative">
                                 <div class="absolute bottom-2 bg-slate-900 px-4 py-1 rounded-md text-sm shadow-lg">Dealer</div>
                                 <div class="absolute text-center"><div class="flex items-center gap-1 text-sm">📷<span class="hidden sm:inline">탑 캠</span></div><div class="flex items-center gap-1 text-sm">📹<span class="hidden sm:inline">보드 캠</span></div></div>
                             </div>
@@ -311,11 +296,11 @@
 
 
     <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, addDoc, doc, setDoc, deleteDoc, getDocs, writeBatch, getDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+        
         document.addEventListener('DOMContentLoaded', () => {
-            const { initializeApp } = window.firebase;
-            const { getAuth, signInAnonymously } = window.firebase;
-            const { getFirestore, collection, onSnapshot, addDoc, doc, setDoc, deleteDoc, getDocs, writeBatch } = window.firebase;
-            
             let db, auth, taskCollection;
             let allTasks = [];
             let currentFilter = 'all';
@@ -331,8 +316,8 @@
                   prod_tasks: [ '프리캠(2인) 총괄 디렉팅 및 A컷 품질 책임', '현장 A컷 품질 실시간 관리', '"킥 엣지" 시퀀스 실행 감독' ]
                 },
                 { id: 'matthew', name: 'Matthew Kim', role: '기술/장비 감독', emoji: '🛠️', color: 'rgba(22, 163, 74, 0.7)',
-                   pre_tasks: [ '18캠 시스템 최적화 및 A컷 구현 설정 확보', '조명/렌즈 등 기술 요소 R&D 및 최적 조합 연구', '사이프러스 물류/운송 계획 수립', '리허설 시 기술 지원 및 시스템 안정성 점검' ],
-                   prod_tasks: [ '현장 장비 설치, 운영, 철수 총괄', '실시간 기술 문제 해결 및 장비 트러블슈팅', '데이터 관리 및 백업 총괄' ]
+                  pre_tasks: [ '18캠 시스템 최적화 및 A컷 구현 설정 확보', '조명/렌즈 등 기술 요소 R&D 및 최적 조합 연구', '사이프러스 물류/운송 계획 수립', '리허설 시 기술 지원 및 시스템 안정성 점검' ],
+                  prod_tasks: [ '현장 장비 설치, 운영, 철수 총괄', '실시간 기술 문제 해결 및 장비 트러블슈팅', '데이터 관리 및 백업 총괄' ]
                 },
                 { id: 'trey', name: 'Trey Song', role: '스위처 시스템 개발 / 운용', emoji: '🕹️', color: 'rgba(120, 81, 169, 0.7)',
                   pre_tasks: [ '플레이어 액션 기반 신규 스위처 시스템 개발', '휴먼 에러 최소화를 위한 스위칭 로직 구현', '포커 도메인 분석을 통한 "킥 엣지" 발생 예측 모델 연구', 'GFX/아카이빙 시스템 설계 및 연동 테스트', '리허설 시 스위처 통합 테스트' ],
@@ -344,48 +329,85 @@
             const memberEmojiMap = teamData.reduce((acc, member) => { acc[member.id] = member.emoji; return acc; }, {});
             
             const weekLabels = [ '6월 W2','6월 W3','6월 W4','7월 W1','7월 W2','7월 W3','7월 W4','8월 W1','8월 W2','8월 W3','8월 W4','9월 W1','9월 W2','9월 W3','9월 W4','10월 W1' ];
-            const projectStartDate = new Date('2025-06-09');
-
+            const PROJECT_START_DATE = new Date('2025-06-09');
+            const FIST_DAY_OF_WEEK_OPTIONS = { weekStartsOn: 1 };
+            
             function dateToWeekIndex(dateStr) {
                 if (!dateStr) return 0;
+                if (typeof dateFns === 'undefined') {
+                    console.error('date-fns library is not loaded!');
+                    const diffTime = new Date(dateStr) - PROJECT_START_DATE;
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    return Math.floor(diffDays / 7);
+                }
+                const { startOfWeek, differenceInWeeks } = dateFns;
                 const targetDate = new Date(dateStr);
-                const diffTime = targetDate - projectStartDate;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                return Math.floor(diffDays / 7);
+                const projectWeekStartDate = startOfWeek(PROJECT_START_DATE, FIST_DAY_OF_WEEK_OPTIONS);
+                return differenceInWeeks(targetDate, projectWeekStartDate, FIST_DAY_OF_WEEK_OPTIONS);
             }
             
             const initialTasks = [
-                    { phase: '1', label: '프로젝트 총괄 기획', member: 'aiden', startDate: '2025-06-11', endDate: '2025-06-28'}, { phase: '1', label: '5월 MPP 분석 및 레퍼런스 수집', member: 'kai', startDate: '2025-06-11', endDate: '2025-06-21'}, { phase: '1', label: 'A컷 스타일가이드 V0.1', member: 'kai', startDate: '2025-06-24', endDate: '2025-06-28'}, { phase: '1', label: '18캠 시스템 구성/요구사항 정의', member: 'matthew', startDate: '2025-06-11', endDate: '2025-06-21'}, { phase: '1', label: '6GHz 시스템 리서치/준비', member: 'matthew', startDate: '2025-06-24', endDate: '2025-07-05'}, { phase: '2', label: '신규 스위처 분석/설계', member: 'trey', startDate: '2025-08-05', endDate: '2025-08-16'}, { phase: '2', label: '팀 R&D 진행상황 점검/피드백', member: 'aiden', startDate: '2025-07-01', endDate: '2025-08-16'}, { phase: '2', label: 'R&D: "킥 엣지" 디자인', member: 'aiden', startDate: '2025-08-19', endDate: '2025-08-23'}, { phase: '2', label: '기술 통합 및 최종 점검', member: 'aiden', startDate: '2025-08-26', endDate: '2025-08-30'}, { phase: '2', label: 'R&D: 구도/앵글 심화', member: 'kai', startDate: '2025-07-01', endDate: '2025-07-12'}, { phase: '2', label: 'R&D: 색감/톤앤매너', member: 'kai', startDate: '2025-07-15', endDate: '2025-07-26'}, { phase: '2', label: 'R&D: 배경/DoF 및 6GHz 테스트', member: 'kai', startDate: '2025-07-29', endDate: '2025-08-16'}, { phase: '2', label: 'A컷 스타일가이드 V1.0 최종화', member: 'kai', startDate: '2025-08-19', endDate: '2025-08-30'}, { phase: '2', label: 'R&D: 조명 시스템 설계', member: 'matthew', startDate: '2025-07-08', endDate: '2025-07-19'}, { phase: '2', label: 'FR7 및 고정캠 최적화 R&D', member: 'matthew', startDate: '2025-07-22', endDate: '2025-08-02'}, { phase: '2', label: '사이프러스 물류/운송 계획', member: 'matthew', startDate: '2025-08-05', endDate: '2025-08-30'}, { phase: '2', label: '스위처 개발 및 GFX/아카이빙 연동', member: 'trey', startDate: '2025-08-19', endDate: '2025-08-30'}, { phase: '3', label: '리허설 총괄', member: 'aiden', startDate: '2025-09-02', endDate: '2025-09-27'}, { phase: '3', label: '리허설 (미학/연출 점검)', member: 'kai', startDate: '2025-09-02', endDate: '2025-09-27'}, { phase: '3', label: '리허설 (기술 지원)', member: 'matthew', startDate: '2025-09-02', endDate: '2025-09-27'}, { phase: '3', label: '리허설 (스위처 통합 테스트)', member: 'trey', startDate: '2025-09-02', endDate: '2025-09-27'}, { phase: '4', label: '최종 패킹 및 출국 준비', member: 'aiden', startDate: '2025-09-30', endDate: '2025-10-04'}, { phase: '4', label: '최종 패킹 및 출국 준비', member: 'kai', startDate: '2025-09-30', endDate: '2025-10-04'}, { phase: '4', label: '최종 패킹 및 출국 준비', member: 'matthew', startDate: '2025-09-30', endDate: '2025-10-04'}, { phase: '4', label: '최종 패킹 및 출국 준비', member: 'trey', startDate: '2025-09-30', endDate: '2025-10-04'},
+                { phase: '1', label: '프로젝트 총괄 기획', member: 'aiden', startDate: '2025-06-11', endDate: '2025-06-28'}, { phase: '1', label: '5월 MPP 분석 및 레퍼런스 수집', member: 'kai', startDate: '2025-06-11', endDate: '2025-06-21'}, { phase: '1', label: 'A컷 스타일가이드 V0.1', member: 'kai', startDate: '2025-06-24', endDate: '2025-06-28'}, { phase: '1', label: '18캠 시스템 구성/요구사항 정의', member: 'matthew', startDate: '2025-06-11', endDate: '2025-06-21'}, { phase: '1', label: '6GHz 시스템 리서치/준비', member: 'matthew', startDate: '2025-06-24', endDate: '2025-07-05'}, { phase: '2', label: '신규 스위처 분석/설계', member: 'trey', startDate: '2025-08-05', endDate: '2025-08-16'}, { phase: '2', label: '팀 R&D 진행상황 점검/피드백', member: 'aiden', startDate: '2025-07-01', endDate: '2025-08-16'}, { phase: '2', label: 'R&D: "킥 엣지" 디자인', member: 'aiden', startDate: '2025-08-19', endDate: '2025-08-23'}, { phase: '2', label: '기술 통합 및 최종 점검', member: 'aiden', startDate: '2025-08-26', endDate: '2025-08-30'}, { phase: '2', label: 'R&D: 구도/앵글 심화', member: 'kai', startDate: '2025-07-01', endDate: '2025-07-12'}, { phase: '2', label: 'R&D: 색감/톤앤매너', member: 'kai', startDate: '2025-07-15', endDate: '2025-07-26'}, { phase: '2', label: 'R&D: 배경/DoF 및 6GHz 테스트', member: 'kai', startDate: '2025-07-29', endDate: '2025-08-16'}, { phase: '2', label: 'A컷 스타일가이드 V1.0 최종화', member: 'kai', startDate: '2025-08-19', endDate: '2025-08-30'}, { phase: '2', label: 'R&D: 조명 시스템 설계', member: 'matthew', startDate: '2025-07-08', endDate: '2025-07-19'}, { phase: '2', label: 'FR7 및 고정캠 최적화 R&D', member: 'matthew', startDate: '2025-07-22', endDate: '2025-08-02'}, { phase: '2', label: '사이프러스 물류/운송 계획', member: 'matthew', startDate: '2025-08-05', endDate: '2025-08-30'}, { phase: '2', label: '스위처 개발 및 GFX/아카이빙 연동', member: 'trey', startDate: '2025-08-19', endDate: '2025-08-30'}, { phase: '3', label: '리허설 총괄', member: 'aiden', startDate: '2025-09-02', endDate: '2025-09-27'}, { phase: '3', label: '리허설 (미학/연출 점검)', member: 'kai', startDate: '2025-09-02', endDate: '2025-09-27'}, { phase: '3', label: '리허설 (기술 지원)', member: 'matthew', startDate: '2025-09-02', endDate: '2025-09-27'}, { phase: '3', label: '리허설 (스위처 통합 테스트)', member: 'trey', startDate: '2025-09-02', endDate: '2025-09-27'}, { phase: '4', label: '최종 패킹 및 출국 준비', member: 'aiden', startDate: '2025-09-30', endDate: '2025-10-04'}, { phase: '4', label: '최종 패킹 및 출국 준비', member: 'kai', startDate: '2025-09-30', endDate: '2025-10-04'}, { phase: '4', label: '최종 패킹 및 출국 준비', member: 'matthew', startDate: '2025-09-30', endDate: '2025-10-04'}, { phase: '4', label: '최종 패킹 및 출국 준비', member: 'trey', startDate: '2025-09-30', endDate: '2025-10-04'},
             ].map(task => ({ ...task, start: dateToWeekIndex(task.startDate), end: dateToWeekIndex(task.endDate) }));
+
+            function getFilteredTasks(filter) {
+                if (filter === 'all' || filter.startsWith('phase')) {
+                    if (filter === 'all') { return [...allTasks].sort((a,b) => a.start - b.start); } 
+                    else { const phaseFilter = filter.replace('phase', ''); return allTasks.filter(task => task.phase === phaseFilter); }
+                } else { return allTasks.filter(task => task.member === filter); }
+            }
 
             function updateChart(filter) {
                 currentFilter = filter;
-                let filteredTasks;
-                if (filter === 'all' || filter.startsWith('phase')) {
-                    if (filter === 'all') { filteredTasks = allTasks.sort((a,b) => a.start - b.start); } 
-                    else { const phaseFilter = filter.replace('phase', ''); filteredTasks = allTasks.filter(task => task.phase === phaseFilter); }
-                } else { filteredTasks = allTasks.filter(task => task.member === filter); }
+                const filteredTasks = getFilteredTasks(filter);
+
+                if (!ganttChart) return;
 
                 ganttChart.data.labels = filteredTasks.map(d => `${memberEmojiMap[d.member]} ${d.label}`);
-                ganttChart.data.datasets = [{ data: filteredTasks.map(d => [d.start, d.end + 1]), backgroundColor: filteredTasks.map(d => memberColorMap[d.member] || 'gray'), barPercentage: 0.6, borderRadius: 4 }];
+                ganttChart.data.datasets[0].data = filteredTasks.map(d => [d.start, d.end + 1]);
+                ganttChart.data.datasets[0].backgroundColor = filteredTasks.map(d => memberColorMap[d.member] || 'gray');
                 ganttChart.update();
 
-                document.querySelectorAll('#roadmap .btn').forEach(b => { b.classList.remove('active', 'btn-primary'); b.classList.add('btn-secondary'); });
-                document.getElementById(`filter-${filter}`).classList.add('active', 'btn-primary');
-                document.getElementById(`filter-${filter}`).classList.remove('btn-secondary');
+                document.querySelectorAll('#roadmap .btn').forEach(b => { 
+                    b.classList.remove('active', 'btn-primary'); 
+                    b.classList.add('btn-secondary'); 
+                });
+                
+                const activeFilterButton = document.getElementById(`filter-${filter}`);
+                if (activeFilterButton) {
+                    activeFilterButton.classList.add('active', 'btn-primary');
+                    activeFilterButton.classList.remove('btn-secondary');
+                }
             }
             
             async function initApp() {
-                const firebaseConfig = { apiKey: "AIzaSyBqJL9rF1UFH2F9glfYQixAiOMxD0aooPg", authDomain: "ggp-camera-plan.firebaseapp.com", projectId: "ggp-camera-plan", storageBucket: "ggp-camera-plan.appspot.com", messagingSenderId: "108052983282", appId: "1:108052983282:web:39f8b769a628f81c7d8f6b" };
+                const firebaseConfig = typeof __firebase_config !== 'undefined'
+                    ? JSON.parse(__firebase_config)
+                    : { 
+                        apiKey: "AIzaSy...", 
+                        authDomain: "your-project.firebaseapp.com",
+                        projectId: "your-project-id"
+                    };
+                
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'ggp-plan-local-dev';
+
                 try {
                     const app = initializeApp(firebaseConfig);
                     db = getFirestore(app);
                     auth = getAuth(app);
-                    await signInAnonymously(auth);
-                    taskCollection = collection(db, "roadmap_tasks");
-                    
+
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                    console.log("Authentication successful. User UID:", auth.currentUser?.uid);
+
+                    taskCollection = collection(db, "artifacts", appId, "public", "data", "roadmap_tasks");
+
                     const querySnapshot = await getDocs(taskCollection);
                     if (querySnapshot.empty) {
+                        console.log("No tasks found in Firestore, initializing with default tasks.");
                         const batch = writeBatch(db);
                         initialTasks.forEach(task => {
                             const newDocRef = doc(taskCollection);
@@ -398,13 +420,14 @@
                         allTasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                         updateChart(currentFilter);
                     }, (error) => {
-                        console.error("데이터 가져오기 오류:", error);
-                        allTasks = initialTasks;
+                        console.error("Error fetching data from Firestore:", error);
+                        allTasks = initialTasks.map(task => ({ ...task, id: crypto.randomUUID() }));
                         updateChart('all');
                     });
+
                 } catch (error) {
-                    console.error("Firebase 초기화 오류:", error);
-                    allTasks = initialTasks;
+                    console.error("Fatal Firebase Initialization Error:", error);
+                    allTasks = initialTasks.map(task => ({ ...task, id: crypto.randomUUID() }));
                     updateChart('all');
                 }
             }
@@ -419,11 +442,35 @@
                     card.innerHTML = `<div class="text-5xl mb-3">${member.emoji}</div><h4 class="text-xl font-bold text-gray-800">${member.name}</h4><p class="font-semibold" style="color: ${member.color.replace('0.7', '1')}">${member.role}</p>`;
                     teamCardsContainer.appendChild(card);
                 });
+                
+                const taskMemberSelect = document.getElementById('task-member');
+                teamData.forEach(member => {
+                    const option = document.createElement('option');
+                    option.value = member.id;
+                    option.textContent = `${member.emoji} ${member.name}`;
+                    taskMemberSelect.appendChild(option);
+                });
 
                 const ctx = document.getElementById('ganttChart').getContext('2d');
                 ganttChart = new Chart(ctx, { 
-                    type: 'bar', data: { labels: [], datasets: [] },
-                    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                    type: 'bar', 
+                    data: { 
+                        labels: [], 
+                        datasets: [{ data: [], barPercentage: 0.6, borderRadius: 4 }] 
+                    },
+                    options: { 
+                        onClick: (e) => {
+                            const activePoints = ganttChart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
+                            if (activePoints.length > 0) {
+                                const { index } = activePoints[0];
+                                const filteredTasks = getFilteredTasks(currentFilter);
+                                const clickedTask = filteredTasks[index];
+                                if (clickedTask && clickedTask.id) {
+                                    openTaskModal(clickedTask);
+                                }
+                            }
+                        },
+                        indexAxis: 'y', responsive: true, maintainAspectRatio: false,
                         plugins: { legend: { display: false },
                             tooltip: { callbacks: {
                                 label: function(context) { const startWeek = weekLabels[context.raw[0]]; const endWeek = weekLabels[context.raw[1] - 1]; if(!startWeek || !endWeek) return ''; const labelText = context.chart.data.labels[context.dataIndex].substring(2); if(startWeek === endWeek) return `${labelText}: ${startWeek}`; return `${labelText}: ${startWeek} ~ ${endWeek}`; }
@@ -443,13 +490,105 @@
                 });
             }
 
+            // --- [NEW] Task Modal Management ---
+            const taskModal = document.getElementById('task-modal');
+            const taskForm = document.getElementById('task-form');
+            const modalTitle = document.getElementById('modal-title');
+            const taskIdInput = document.getElementById('task-id');
+            const taskLabelInput = document.getElementById('task-label');
+            const taskMemberInput = document.getElementById('task-member');
+            const taskStartInput = document.getElementById('task-start');
+            const taskEndInput = document.getElementById('task-end');
+            const taskPhaseInput = document.getElementById('task-phase');
+            const deleteTaskBtn = document.getElementById('delete-task-btn');
+
+            function openTaskModal(task = null) {
+                taskForm.reset();
+                if (task) { // Editing existing task
+                    modalTitle.textContent = '업무 수정';
+                    taskIdInput.value = task.id;
+                    taskLabelInput.value = task.label;
+                    taskMemberInput.value = task.member;
+                    taskStartInput.value = task.startDate;
+                    taskEndInput.value = task.endDate;
+                    taskPhaseInput.value = task.phase;
+                    deleteTaskBtn.classList.remove('hidden');
+                } else { // Adding new task
+                    modalTitle.textContent = '업무 추가';
+                    taskIdInput.value = '';
+                    deleteTaskBtn.classList.add('hidden');
+                }
+                taskModal.classList.remove('hidden');
+            }
+
+            function closeTaskModal() {
+                taskModal.classList.add('hidden');
+            }
+
+            async function handleFormSubmit(e) {
+                e.preventDefault();
+                if (!db) {
+                    console.error("Firestore is not initialized.");
+                    return;
+                }
+                const taskId = taskIdInput.value;
+                const taskData = {
+                    label: taskLabelInput.value,
+                    member: taskMemberInput.value,
+                    startDate: taskStartInput.value,
+                    endDate: taskEndInput.value,
+                    phase: taskPhaseInput.value,
+                    start: dateToWeekIndex(taskStartInput.value),
+                    end: dateToWeekIndex(taskEndInput.value),
+                };
+
+                try {
+                    if (taskId) { // Update existing task
+                        const taskRef = doc(taskCollection, taskId);
+                        await setDoc(taskRef, taskData);
+                    } else { // Add new task
+                        await addDoc(taskCollection, taskData);
+                    }
+                    closeTaskModal();
+                } catch (error) {
+                    console.error("Error saving task:", error);
+                }
+            }
+            
+            async function handleDeleteTask() {
+                const taskId = taskIdInput.value;
+                if (!taskId || !db) return;
+                
+                // A simple confirmation before deleting
+                if (confirm(`'${taskLabelInput.value}' 업무를 정말 삭제하시겠습니까?`)) {
+                    try {
+                        await deleteDoc(doc(taskCollection, taskId));
+                        closeTaskModal();
+                    } catch (error) {
+                        console.error("Error deleting task:", error);
+                    }
+                }
+            }
+
+
             function setupEventListeners() {
-                const roadmapFilters = document.getElementById('roadmap');
-                roadmapFilters.addEventListener('click', (e) => {
-                    if (e.target.tagName !== 'BUTTON') return;
-                    const filterId = e.target.id.replace('filter-', '');
-                    updateChart(filterId);
+                const roadmapSection = document.getElementById('roadmap');
+                roadmapSection.addEventListener('click', (e) => {
+                    const targetButton = e.target.closest('button');
+                    if (!targetButton) return;
+
+                    if (targetButton.id.startsWith('filter-')) {
+                        const filterId = targetButton.id.replace('filter-', '');
+                        updateChart(filterId);
+                    } else if (targetButton.id === 'add-task-btn') {
+                        openTaskModal(); // Open modal for adding a new task
+                    }
                 });
+
+                document.getElementById('close-modal-btn').addEventListener('click', closeTaskModal);
+                taskForm.addEventListener('submit', handleFormSubmit);
+                deleteTaskBtn.addEventListener('click', handleDeleteTask);
+
 
                 const teamCardsContainer = document.getElementById('team-cards-container');
                 const teamDetailsContainer = document.getElementById('team-details-container');
@@ -513,9 +652,9 @@
                 document.querySelector('#strategy').addEventListener('click', (e) => {
                      const button = e.target.closest('.kick-edge-ref-btn');
                      if(button) {
-                        const url = button.dataset.url;
-                        youtubeIframe.src = url;
-                        videoModal.classList.remove('hidden');
+                         const url = button.dataset.url;
+                         youtubeIframe.src = url;
+                         videoModal.classList.remove('hidden');
                     }
                 });
                 const closeVideoModal = () => { videoModal.classList.add('hidden'); youtubeIframe.src = ""; };
