@@ -8,7 +8,7 @@
     <!-- Visualization & Content Choices: Report Info: Project Timeline -> Goal: Organize & Change -> Viz: Interactive Gantt Chart (Chart.js) with Firebase backend -> Interaction: Add, Edit, Delete tasks dynamically. Filter by phase/person -> Justification: Allows real-time, collaborative editing and easy visualization of the entire project schedule and individual responsibilities over time. Report Info: Team Roles & Tasks -> Goal: Organize & Inform -> Viz: Interactive HTML/CSS Cards -> Interaction: Click to expand -> Justification: Presents a clean overview of the team, with details available on demand to avoid clutter. Report Info: Camera Setup -> Goal: Inform -> Viz: HTML/CSS Diagram -> Interaction: Hover for info -> Justification: A visual representation is more intuitive than a text list for understanding the complex 18-camera setup. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 
-    <title>지지 프로덕션 2025 WSOP Cyprus 인터랙티브 계획서</title>
+    <title>지지 프로덕션 2025 WSOP Cyprus 인터랙티브 계획서 V2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
@@ -18,6 +18,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
+        /* [IMPROVEMENT] Added smooth scrolling for navigation links */
+        html { scroll-behavior: smooth; }
         body { font-family: 'Noto Sans KR', sans-serif; background-color: #F8F7F4; color: #3D3D3D; }
         .card { background-color: #FFFFFF; border: 1px solid #EAEAEA; transition: all 0.3s ease; }
         .card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
@@ -30,13 +32,16 @@
         .btn-secondary:hover { background-color: #BDBDBD; }
         .btn.active { background-color: #8B4513; color: white; }
         .section-title::after { content: ''; display: block; width: 50px; height: 3px; background-color: #A0522D; margin-top: 8px; }
-        .chart-container { position: relative; width: 100%; max-width: 1200px; margin-left: auto; margin-right: auto; height: 500px; max-height: 70vh; }
+        .chart-container { position: relative; width: 100%; max-width: 1200px; margin-left: auto; margin-right: auto; min-height: 500px; max-height: 70vh; }
         .camera-icon { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
         .tab-btn { padding: 0.75rem 1.5rem; font-weight: 500; color: #6B7280; border-bottom: 3px solid transparent; transition: all 0.3s ease; }
         .tab-btn.active { color: #A0522D; border-bottom-color: #A0522D; }
         .modal-overlay { background-color: rgba(0,0,0,0.5); transition: opacity 0.3s ease-in-out; }
         .ref-btn { background-color: rgba(255, 255, 255, 0.2); backdrop-filter: blur(4px); border: 1px solid rgba(255, 255, 255, 0.3); }
         .ref-btn:hover { background-color: rgba(255, 255, 255, 0.3); }
+        /* [NEW] Styles for loading spinner */
+        .loader { border: 4px solid #f3f3f3; border-radius: 50%; border-top: 4px solid #A0522D; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="antialiased">
@@ -116,7 +121,7 @@
         </section>
 
         <section id="setup" class="mb-20">
-            <h2 class="section-title text-3xl font-bold text-gray-900 mb-12 text-center">장비 구성 진화: MPP → WSOP SC</h2>
+             <h2 class="section-title text-3xl font-bold text-gray-900 mb-12 text-center">장비 구성 진화: MPP → WSOP SC</h2>
             <div class="bg-white p-8 rounded-xl shadow-lg border border-gray-200">
                 <p class="text-center text-gray-600 mb-8">5월 MPP 프로젝트의 경험을 바탕으로, 10월 WSOP SC에서는 카메라 시스템을 단계적으로 발전시켜 A컷 품질을 극대화합니다.</p>
                 
@@ -227,7 +232,17 @@
                     <button id="filter-trey" class="btn btn-secondary px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm">🕹️ Trey</button>
                 </div>
                 <div class="chart-container">
-                    <canvas id="ganttChart"></canvas>
+                    <!-- [NEW] Loading indicator will be shown initially -->
+                    <div id="loading-indicator" class="flex flex-col items-center justify-center h-full">
+                        <div class="loader"></div>
+                        <p class="mt-4 text-gray-600">데이터를 불러오는 중입니다...</p>
+                    </div>
+                    <!-- [NEW] Empty state message, hidden by default -->
+                    <div id="empty-state-message" class="hidden flex items-center justify-center h-full">
+                        <p class="text-gray-500 text-lg">해당하는 업무가 없습니다.</p>
+                    </div>
+                    <!-- Canvas is now hidden by default, will be shown after loading -->
+                    <canvas id="ganttChart" class="hidden"></canvas>
                 </div>
                 <div class="text-center mt-6">
                     <button id="add-task-btn" class="btn btn-primary px-6 py-2 rounded-lg font-semibold">업무 추가</button>
@@ -286,6 +301,24 @@
         </div>
     </div>
     
+    <!-- [NEW] Delete Confirmation Modal -->
+    <div id="delete-confirm-modal" class="modal-overlay fixed inset-0 z-[60] flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-sm">
+            <div class="p-6 text-center">
+                 <svg class="mx-auto mb-4 text-gray-400 w-12 h-12" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                </svg>
+                <h3 class="mb-5 text-lg font-normal text-gray-600">이 업무를 정말 삭제하시겠습니까?</h3>
+                <button id="confirm-delete-btn" type="button" class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center mr-2">
+                    예, 삭제합니다
+                </button>
+                <button id="cancel-delete-btn" type="button" class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10">
+                    아니오, 취소합니다
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Video Modal -->
     <div id="video-modal" class="modal-overlay fixed inset-0 z-[100] flex items-center justify-center p-4 hidden">
         <div class="bg-black w-full max-w-4xl aspect-video relative">
@@ -294,20 +327,23 @@
         </div>
     </div>
 
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, addDoc, doc, setDoc, deleteDoc, getDocs, writeBatch, getDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, addDoc, doc, setDoc, deleteDoc, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
         
         document.addEventListener('DOMContentLoaded', () => {
+            // --- Global State ---
             let db, auth, taskCollection;
             let allTasks = [];
             let currentFilter = 'all';
             let ganttChart;
             let hoveredItem = { index: null, iconBounds: null };
-            let weekLabels = []; // [MODIFIED] Initialize as empty
+            let weekLabels = []; 
+            let isInitialLoad = true;
+            let taskToDeleteId = null;
 
+            // --- Constants ---
             const teamData = [
                 { id: 'aiden', name: 'Aiden Kim', role: '파트 리더', emoji: '👑', color: 'rgba(217, 119, 6, 0.7)', 
                   pre_tasks: [ 'A컷 품질 향상 목표 설정 및 팀 비전 제시', 'A컷 스타일 가이드 최종 제안', '팀원 R&D 방향 설정 및 성과 관리', '리허설 시나리오 설계 및 총괄 지휘' ],
@@ -326,73 +362,49 @@
                   prod_tasks: [ '메인 스위처 실시간 운용', '카메라 콜 및 GFX 연동 실행', '방송 영상 실시간 아카이빙 관리' ]
                 }
             ];
-
             const memberColorMap = teamData.reduce((acc, member) => { acc[member.id] = member.color; return acc; }, {});
             const memberEmojiMap = teamData.reduce((acc, member) => { acc[member.id] = member.emoji; return acc; }, {});
-            
             const PROJECT_START_DATE = new Date('2025-06-09');
-            const FIST_DAY_OF_WEEK_OPTIONS = { weekStartsOn: 1 };
-            
-            // [NEW] Dynamically generate week labels for accuracy.
+            const FIST_DAY_OF_WEEK_OPTIONS = { weekStartsOn: 1 }; // Monday
+
+            // --- Date & Chart Helper Functions ---
             function generateWeekLabels(startDate, numWeeks) {
                 if (typeof dateFns === 'undefined') return [];
                 const labels = [];
-                const { addWeeks, getMonth, getDate } = dateFns;
-
-                function getWeekOfMonth(date) {
-                    const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
-                    const dayOfWeek = firstDayOfMonth.getDay() === 0 ? 6 : firstDayOfMonth.getDay() - 1; // Monday is 0
-                    return Math.ceil((date.getDate() + dayOfWeek) / 7);
-                }
-
+                const { addWeeks, getMonth, getDate, getWeekOfMonth } = dateFns;
                 for (let i = 0; i < numWeeks; i++) {
                     const weekStartDate = addWeeks(startDate, i);
-                    const month = getMonth(weekStartDate) + 1; // getMonth is 0-indexed
-                    const weekOfMonth = getWeekOfMonth(weekStartDate);
+                    const month = getMonth(weekStartDate) + 1;
+                    const weekOfMonth = getWeekOfMonth(weekStartDate, FIST_DAY_OF_WEEK_OPTIONS);
                     labels.push(`${month}월 W${weekOfMonth}`);
                 }
                 return labels;
             }
 
             function dateToWeekIndex(dateStr) {
-                if (!dateStr) return 0;
-                if (typeof dateFns === 'undefined') return 0;
-                
+                if (!dateStr || typeof dateFns === 'undefined') return 0;
                 const { startOfWeek, differenceInWeeks } = dateFns;
-                // Parse date string as UTC to avoid timezone issues.
-                const targetDate = new Date(dateStr + 'T00:00:00Z');
+                const targetDate = new Date(dateStr + 'T00:00:00Z'); // Parse as UTC
                 const projectWeekStartDate = startOfWeek(PROJECT_START_DATE, FIST_DAY_OF_WEEK_OPTIONS);
                 return differenceInWeeks(targetDate, projectWeekStartDate, FIST_DAY_OF_WEEK_OPTIONS);
             }
-            
+
             const initialTasks = [
-                { phase: '1', label: '프로젝트 총괄 기획', member: 'aiden', startDate: '2025-06-11', endDate: '2025-06-28'}, { phase: '1', label: '5월 MPP 분석 및 레퍼런스 수집', member: 'kai', startDate: '2025-06-11', endDate: '2025-06-21'}, { phase: '1', label: 'A컷 스타일가이드 V0.1', member: 'kai', startDate: '2025-06-24', endDate: '2025-06-28'}, { phase: '1', label: '18캠 시스템 구성/요구사항 정의', member: 'matthew', startDate: '2025-06-11', endDate: '2025-06-21'}, { phase: '1', label: '6GHz 시스템 리서치/준비', member: 'matthew', startDate: '2025-06-24', endDate: '2025-07-05'}, { phase: '2', label: '신규 스위처 분석/설계', member: 'trey', startDate: '2025-08-05', endDate: '2025-08-16'}, { phase: '2', label: '팀 R&D 진행상황 점검/피드백', member: 'aiden', startDate: '2025-07-01', endDate: '2025-08-16'}, { phase: '2', label: 'R&D: "킥 엣지" 디자인', member: 'aiden', startDate: '2025-08-19', endDate: '2025-08-23'}, { phase: '2', label: '기술 통합 및 최종 점검', member: 'aiden', startDate: '2025-08-26', endDate: '2025-08-30'}, { phase: '2', label: 'R&D: 구도/앵글 심화', member: 'kai', startDate: '2025-07-01', endDate: '2025-07-12'}, { phase: '2', label: 'R&D: 색감/톤앤매너', member: 'kai', startDate: '2025-07-15', endDate: '2025-07-26'}, { phase: '2', label: 'R&D: 배경/DoF 및 6GHz 테스트', member: 'kai', startDate: '2025-07-29', endDate: '2025-08-16'}, { phase: '2', label: 'A컷 스타일가이드 V1.0 최종화', member: 'kai', startDate: '2025-08-19', endDate: '2025-08-30'}, { phase: '2', label: 'R&D: 조명 시스템 설계', member: 'matthew', startDate: '2025-07-08', endDate: '2025-07-19'}, { phase: '2', label: 'FR7 및 고정캠 최적화 R&D', member: 'matthew', startDate: '2025-07-22', endDate: '2025-08-02'}, { phase: '2', label: '사이프러스 물류/운송 계획', member: 'matthew', startDate: '2025-08-05', endDate: '2025-08-30'}, { phase: '2', label: '스위처 개발 및 GFX/아카이빙 연동', member: 'trey', startDate: '2025-08-19', endDate: '2025-08-30'}, { phase: '3', label: '리허설 총괄', member: 'aiden', startDate: '2025-09-02', endDate: '2025-09-27'}, { phase: '3', label: '리허설 (미학/연출 점검)', member: 'kai', startDate: '2025-09-02', endDate: '2025-09-27'}, { phase: '3', label: '리허설 (기술 지원)', member: 'matthew', startDate: '2025-09-02', endDate: '2025-09-27'}, { phase: '3', label: '리허설 (스위처 통합 테스트)', member: 'trey', startDate: '2025-09-02', endDate: '2025-09-27'}, { phase: '4', label: '최종 패킹 및 출국 준비', member: 'aiden', startDate: '2025-09-30', endDate: '2025-10-04'}, { phase: '4', label: '최종 패킹 및 출국 준비', member: 'kai', startDate: '2025-09-30', endDate: '2025-10-04'}, { phase: '4', label: '최종 패킹 및 출국 준비', member: 'matthew', startDate: '2025-09-30', endDate: '2025-10-04'}, { phase: '4', label: '최종 패킹 및 출국 준비', member: 'trey', startDate: '2025-09-30', endDate: '2025-10-04'},
+                 { phase: '1', label: '프로젝트 총괄 기획', member: 'aiden', startDate: '2025-06-11', endDate: '2025-06-28'}, { phase: '1', label: '5월 MPP 분석 및 레퍼런스 수집', member: 'kai', startDate: '2025-06-11', endDate: '2025-06-21'}, { phase: '1', label: 'A컷 스타일가이드 V0.1', member: 'kai', startDate: '2025-06-24', endDate: '2025-06-28'}, { phase: '1', label: '18캠 시스템 구성/요구사항 정의', member: 'matthew', startDate: '2025-06-11', endDate: '2025-06-21'}, { phase: '1', label: '6GHz 시스템 리서치/준비', member: 'matthew', startDate: '2025-06-24', endDate: '2025-07-05'}, { phase: '2', label: '신규 스위처 분석/설계', member: 'trey', startDate: '2025-08-05', endDate: '2025-08-16'}, { phase: '2', label: '팀 R&D 진행상황 점검/피드백', member: 'aiden', startDate: '2025-07-01', endDate: '2025-08-16'}, { phase: '2', label: 'R&D: "킥 엣지" 디자인', member: 'aiden', startDate: '2025-08-19', endDate: '2025-08-23'}, { phase: '2', label: '기술 통합 및 최종 점검', member: 'aiden', startDate: '2025-08-26', endDate: '2025-08-30'}, { phase: '2', label: 'R&D: 구도/앵글 심화', member: 'kai', startDate: '2025-07-01', endDate: '2025-07-12'}, { phase: '2', label: 'R&D: 색감/톤앤매너', member: 'kai', startDate: '2025-07-15', endDate: '2025-07-26'}, { phase: '2', label: 'R&D: 배경/DoF 및 6GHz 테스트', member: 'kai', startDate: '2025-07-29', endDate: '2025-08-16'}, { phase: '2', label: 'A컷 스타일가이드 V1.0 최종화', member: 'kai', startDate: '2025-08-19', endDate: '2025-08-30'}, { phase: '2', label: 'R&D: 조명 시스템 설계', member: 'matthew', startDate: '2025-07-08', endDate: '2025-07-19'}, { phase: '2', label: 'FR7 및 고정캠 최적화 R&D', member: 'matthew', startDate: '2025-07-22', endDate: '2025-08-02'}, { phase: '2', label: '사이프러스 물류/운송 계획', member: 'matthew', startDate: '2025-08-05', endDate: '2025-08-30'}, { phase: '2', label: '스위처 개발 및 GFX/아카이빙 연동', member: 'trey', startDate: '2025-08-19', endDate: '2025-08-30'}, { phase: '3', label: '리허설 총괄', member: 'aiden', startDate: '2025-09-02', endDate: '2025-09-27'}, { phase: '3', label: '리허설 (미학/연출 점검)', member: 'kai', startDate: '2025-09-02', endDate: '2025-09-27'}, { phase: '3', label: '리허설 (기술 지원)', member: 'matthew', startDate: '2025-09-02', endDate: '2025-09-27'}, { phase: '3', label: '리허설 (스위처 통합 테스트)', member: 'trey', startDate: '2025-09-02', endDate: '2025-09-27'}, { phase: '4', label: '최종 패킹 및 출국 준비', member: 'aiden', startDate: '2025-09-30', endDate: '2025-10-04'}, { phase: '4', label: '최종 패킹 및 출국 준비', member: 'kai', startDate: '2025-09-30', endDate: '2025-10-04'}, { phase: '4', label: '최종 패킹 및 출국 준비', member: 'matthew', startDate: '2025-09-30', endDate: '2025-10-04'}, { phase: '4', label: '최종 패킹 및 출국 준비', member: 'trey', startDate: '2025-09-30', endDate: '2025-10-04'},
             ].map(task => ({ ...task, start: dateToWeekIndex(task.startDate), end: dateToWeekIndex(task.endDate) }));
             
+            // --- Chart Plugins & Configuration ---
             function drawTrashIcon(ctx, x, y, size) {
-                const topWidth = size * 0.7;
-                const bottomWidth = size * 0.6;
-                const height = size * 0.8;
-                const lidHeight = size * 0.15;
-                const handleHeight = size * 0.1;
-
                 ctx.save();
-                ctx.strokeStyle = '#e53e3e';
-                ctx.lineWidth = 1.5;
+                ctx.strokeStyle = '#e53e3e'; ctx.lineWidth = 1.5; ctx.lineCap = 'round';
+                // Can
                 ctx.beginPath();
-                ctx.rect(x - topWidth / 2, y - height / 2 - lidHeight, topWidth, lidHeight);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(x - size*0.15, y - height / 2 - lidHeight);
-                ctx.lineTo(x - size*0.15, y - height / 2 - lidHeight - handleHeight);
-                ctx.moveTo(x + size*0.15, y - height / 2 - lidHeight);
-                ctx.lineTo(x + size*0.15, y - height / 2 - lidHeight - handleHeight);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(x - topWidth / 2, y - height / 2);
-                ctx.lineTo(x - bottomWidth / 2, y + height / 2);
-                ctx.lineTo(x + bottomWidth / 2, y + height / 2);
-                ctx.lineTo(x + topWidth / 2, y - height / 2);
+                ctx.moveTo(x - size * 0.35, y - size * 0.4); ctx.lineTo(x + size * 0.35, y - size * 0.4);
+                ctx.moveTo(x - size * 0.25, y - size * 0.4); ctx.lineTo(x - size * 0.2, y + size * 0.4);
+                ctx.lineTo(x + size * 0.2, y + size * 0.4); ctx.lineTo(x + size * 0.25, y - size * 0.4);
+                // Lid
+                ctx.moveTo(x - size * 0.4, y - size * 0.4); ctx.lineTo(x + size * 0.4, y - size * 0.4);
+                ctx.moveTo(x - size * 0.1, y - size * 0.4); ctx.lineTo(x - size * 0.1, y - size * 0.6);
                 ctx.stroke();
                 ctx.restore();
             }
@@ -404,6 +416,7 @@
                         const ctx = chart.ctx;
                         const meta = chart.getDatasetMeta(0);
                         if (hoveredItem.index >= meta.data.length) return;
+                        
                         const element = meta.data[hoveredItem.index];
                         if (!element || element.y < chart.chartArea.top || element.y > chart.chartArea.bottom) return;
                         
@@ -423,42 +436,46 @@
                     }
                 }
             };
-
+            
+            // --- UI Update Functions ---
             function getFilteredTasks(filter) {
-                if (filter === 'all' || filter.startsWith('phase')) {
-                    if (filter === 'all') { return [...allTasks].sort((a,b) => a.start - b.start); } 
-                    else { const phaseFilter = filter.replace('phase', ''); return allTasks.filter(task => task.phase === phaseFilter); }
-                } else { return allTasks.filter(task => task.member === filter); }
+                if (filter === 'all') {
+                    return [...allTasks].sort((a,b) => a.start - b.start);
+                } else if (filter.startsWith('phase')) {
+                    const phaseFilter = filter.replace('phase', '');
+                    return allTasks.filter(task => task.phase === phaseFilter);
+                } else {
+                    return allTasks.filter(task => task.member === filter);
+                }
             }
 
             function updateChart(filter) {
                 currentFilter = filter;
-                const filteredTasks = getFilteredTasks(filter);
                 if (!ganttChart) return;
                 
-                // [MODIFIED] Update chart labels and axis based on dynamically generated labels
-                ganttChart.data.labels = filteredTasks.map(d => `${memberEmojiMap[d.member]} ${d.label}`);
-                ganttChart.data.datasets[0].data = filteredTasks.map(d => [d.start, d.end + 1]);
+                const filteredTasks = getFilteredTasks(filter);
+                const ganttCanvas = document.getElementById('ganttChart');
+                const emptyStateMessage = document.getElementById('empty-state-message');
+                
+                // [IMPROVEMENT] Handle empty state
+                if (filteredTasks.length === 0) {
+                    ganttCanvas.classList.add('hidden');
+                    emptyStateMessage.classList.remove('hidden');
+                } else {
+                    ganttCanvas.classList.remove('hidden');
+                    emptyStateMessage.classList.add('hidden');
+                }
+
+                ganttChart.data.labels = filteredTasks.map(d => `${memberEmojiMap[d.member] || '❓'} ${d.label}`);
+                ganttChart.data.datasets[0].data = filteredTasks.map(d => [d.start, d.end + 1]); // +1 to make the end date inclusive
                 ganttChart.data.datasets[0].backgroundColor = filteredTasks.map(d => memberColorMap[d.member] || 'gray');
                 
-                ganttChart.options.scales.x.max = weekLabels.length - 0.5;
-                ganttChart.options.scales.xAxis2.max = weekLabels.length - 0.5;
-                ganttChart.options.scales.xAxis2.ticks.callback = function(value, index) { 
-                    const label = weekLabels[index] || ''; 
-                    return label.split(' ')[1] || ''; 
-                };
-                 ganttChart.options.scales.x.ticks.callback = function(value, index) { 
-                    if (index >= weekLabels.length) return '';
-                    const currentMonth = weekLabels[index].split(' ')[0]; 
-                    const prevMonth = index > 0 ? weekLabels[index - 1].split(' ')[0] : '';
-                    if (currentMonth !== prevMonth) return currentMonth;
-                    return '';
-                 };
-
                 ganttChart.update();
 
+                // Update filter button styles
                 document.querySelectorAll('#roadmap .btn').forEach(b => { 
-                    b.classList.remove('active', 'btn-primary'); b.classList.add('btn-secondary'); 
+                    b.classList.remove('active', 'btn-primary');
+                    b.classList.add('btn-secondary'); 
                 });
                 const activeFilterButton = document.getElementById(`filter-${filter}`);
                 if (activeFilterButton) {
@@ -467,44 +484,79 @@
                 }
             }
             
-            async function initApp() {
-                const firebaseConfig = typeof __firebase_config !== 'undefined'
-                    ? JSON.parse(__firebase_config)
-                    : { apiKey: "AIzaSy...", authDomain: "your-project.firebaseapp.com", projectId: "your-project-id" };
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'ggp-plan-local-dev';
-                try {
-                    const app = initializeApp(firebaseConfig);
-                    db = getFirestore(app);
-                    auth = getAuth(app);
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else { await signInAnonymously(auth); }
-                    taskCollection = collection(db, "artifacts", appId, "public", "data", "roadmap_tasks");
-                    const querySnapshot = await getDocs(taskCollection);
-                    if (querySnapshot.empty) {
-                        const batch = writeBatch(db);
-                        initialTasks.forEach(task => { batch.set(doc(taskCollection), task); });
-                        await batch.commit();
-                    }
-                    onSnapshot(taskCollection, (snapshot) => {
-                        allTasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                        updateChart(currentFilter);
-                    }, (error) => {
-                        console.error("Error fetching data from Firestore:", error);
-                        allTasks = initialTasks.map(task => ({ ...task, id: crypto.randomUUID() }));
-                        updateChart('all');
-                    });
-                } catch (error) {
-                    console.error("Fatal Firebase Initialization Error:", error);
-                    allTasks = initialTasks.map(task => ({ ...task, id: crypto.randomUUID() }));
-                    updateChart('all');
+            // --- Modals ---
+            const taskModal = document.getElementById('task-modal');
+            const taskForm = document.getElementById('task-form');
+            const deleteConfirmModal = document.getElementById('delete-confirm-modal');
+
+            function openTaskModal(task = null) {
+                taskForm.reset();
+                if (task) { 
+                    document.getElementById('modal-title').textContent = '업무 수정';
+                    document.getElementById('task-id').value = task.id;
+                    document.getElementById('task-label').value = task.label;
+                    document.getElementById('task-member').value = task.member;
+                    document.getElementById('task-start').value = task.startDate;
+                    document.getElementById('task-end').value = task.endDate;
+                    document.getElementById('task-phase').value = task.phase;
+                    document.getElementById('delete-task-btn').classList.remove('hidden');
+                } else {
+                    document.getElementById('modal-title').textContent = '업무 추가';
+                    document.getElementById('task-id').value = '';
+                    document.getElementById('delete-task-btn').classList.add('hidden');
                 }
+                taskModal.classList.remove('hidden');
+            }
+            function closeTaskModal() { taskModal.classList.add('hidden'); }
+            
+            // [NEW] Delete confirmation modal functions
+            function openDeleteConfirmModal(taskId) {
+                taskToDeleteId = taskId;
+                deleteConfirmModal.classList.remove('hidden');
+            }
+            function closeDeleteConfirmModal() {
+                taskToDeleteId = null;
+                deleteConfirmModal.classList.add('hidden');
+            }
+
+            // --- Firestore Data Handling ---
+            async function handleFormSubmit(e) {
+                e.preventDefault();
+                if (!db) { console.error("Firestore is not initialized."); return; }
+                const taskId = document.getElementById('task-id').value;
+                const taskData = {
+                    label: document.getElementById('task-label').value,
+                    member: document.getElementById('task-member').value,
+                    startDate: document.getElementById('task-start').value,
+                    endDate: document.getElementById('task-end').value,
+                    phase: document.getElementById('task-phase').value,
+                    start: dateToWeekIndex(document.getElementById('task-start').value),
+                    end: dateToWeekIndex(document.getElementById('task-end').value),
+                };
+                try {
+                    if (taskId) {
+                        await setDoc(doc(taskCollection, taskId), taskData);
+                    } else {
+                        await addDoc(taskCollection, taskData);
+                    }
+                    closeTaskModal();
+                } catch (error) { console.error("Error saving task:", error); }
             }
             
-            function setupUI() {
-                // [MODIFIED] Generate labels dynamically
-                weekLabels = generateWeekLabels(PROJECT_START_DATE, 20);
+            async function handleDeleteTask() {
+                if (!taskToDeleteId || !db) return;
+                try {
+                    await deleteDoc(doc(taskCollection, taskToDeleteId));
+                    closeDeleteConfirmModal();
+                } catch (error) {
+                    console.error("Error deleting task:", error);
+                    closeDeleteConfirmModal();
+                }
+            }
 
+            // --- UI & Event Setup ---
+            function setupStaticUI() {
+                // Team Cards
                 const teamCardsContainer = document.getElementById('team-cards-container');
                 teamData.forEach(member => {
                     const card = document.createElement('div');
@@ -515,6 +567,7 @@
                     teamCardsContainer.appendChild(card);
                 });
                 
+                // Task Modal Member Select
                 const taskMemberSelect = document.getElementById('task-member');
                 teamData.forEach(member => {
                     const option = document.createElement('option');
@@ -522,125 +575,91 @@
                     option.textContent = `${member.emoji} ${member.name}`;
                     taskMemberSelect.appendChild(option);
                 });
-
-                const ctx = document.getElementById('ganttChart').getContext('2d');
-                ganttChart = new Chart(ctx, { 
-                    type: 'bar', 
-                    data: { labels: [], datasets: [{ data: [], barPercentage: 0.6, borderRadius: 4 }] },
-                    plugins: [ganttRowActionsPlugin],
-                    options: { 
-                        indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-                        plugins: { 
-                            ganttRowActions: {}, legend: { display: false },
-                            tooltip: { callbacks: {
-                                label: function(context) { const startWeek = weekLabels[context.raw[0]]; const endWeek = weekLabels[context.raw[1] - 1]; if(!startWeek || !endWeek) return ''; const labelText = context.chart.data.labels[context.dataIndex].substring(2); if(startWeek === endWeek) return `${labelText}: ${startWeek}`; return `${labelText}: ${startWeek} ~ ${endWeek}`; }
-                            }}
-                        },
-                        scales: { x: { type: 'linear', position: 'top', min: -0.5, max: weekLabels.length - 0.5,
-                                ticks: { stepSize: 1, callback: function(value, index) { /* Callback will be set in updateChart */ }}},
-                            xAxis2: { type: 'linear', position: 'top', min: -0.5, max: weekLabels.length - 0.5,
-                                ticks: { stepSize: 1, callback: function(value, index) { /* Callback will be set in updateChart */ }}},
-                            y: { grid: { display: false }, afterFit: (scaleInstance) => { scaleInstance.width += 30; } }
-                        }
-                    }
-                });
             }
 
-            const taskModal = document.getElementById('task-modal');
-            const taskForm = document.getElementById('task-form');
-            const modalTitle = document.getElementById('modal-title');
-            const taskIdInput = document.getElementById('task-id');
-            const taskLabelInput = document.getElementById('task-label');
-            const taskMemberInput = document.getElementById('task-member');
-            const taskStartInput = document.getElementById('task-start');
-            const taskEndInput = document.getElementById('task-end');
-            const taskPhaseInput = document.getElementById('task-phase');
-            const deleteTaskBtn = document.getElementById('delete-task-btn');
-
-            function openTaskModal(task = null) {
-                taskForm.reset();
-                if (task) { 
-                    modalTitle.textContent = '업무 수정';
-                    taskIdInput.value = task.id;
-                    taskLabelInput.value = task.label;
-                    taskMemberInput.value = task.member;
-                    taskStartInput.value = task.startDate;
-                    taskEndInput.value = task.endDate;
-                    taskPhaseInput.value = task.phase;
-                    deleteTaskBtn.classList.remove('hidden');
-                } else {
-                    modalTitle.textContent = '업무 추가';
-                    taskIdInput.value = '';
-                    deleteTaskBtn.classList.add('hidden');
-                }
-                taskModal.classList.remove('hidden');
-            }
-
-            function closeTaskModal() { taskModal.classList.add('hidden'); }
-
-            async function handleFormSubmit(e) {
-                e.preventDefault();
-                if (!db) { console.error("Firestore is not initialized."); return; }
-                const taskId = taskIdInput.value;
-                const taskData = {
-                    label: taskLabelInput.value, member: taskMemberInput.value,
-                    startDate: taskStartInput.value, endDate: taskEndInput.value,
-                    phase: taskPhaseInput.value, start: dateToWeekIndex(taskStartInput.value),
-                    end: dateToWeekIndex(taskEndInput.value),
-                };
-                try {
-                    if (taskId) { await setDoc(doc(taskCollection, taskId), taskData); } 
-                    else { await addDoc(taskCollection, taskData); }
-                    closeTaskModal();
-                } catch (error) { console.error("Error saving task:", error); }
+            function setupGanttChart() {
+                 weekLabels = generateWeekLabels(PROJECT_START_DATE, 20);
+                 const ctx = document.getElementById('ganttChart').getContext('2d');
+                 ganttChart = new Chart(ctx, { 
+                     type: 'bar', 
+                     data: { labels: [], datasets: [{ data: [], barPercentage: 0.6, borderRadius: 4 }] },
+                     plugins: [ganttRowActionsPlugin],
+                     options: { 
+                         indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                         plugins: { 
+                             legend: { display: false },
+                             tooltip: { callbacks: {
+                                 label: function(context) { 
+                                     const startWeek = weekLabels[context.raw[0]]; 
+                                     const endWeek = weekLabels[context.raw[1] - 1]; 
+                                     if(!startWeek || !endWeek) return ''; 
+                                     const labelText = context.chart.data.labels[context.dataIndex].substring(2); 
+                                     if(startWeek === endWeek) return `${labelText}: ${startWeek}`;
+                                     return `${labelText}: ${startWeek} ~ ${endWeek}`; 
+                                 }
+                             }}
+                         },
+                         scales: {
+                             x: { 
+                                 type: 'linear', position: 'top', min: -0.5, max: weekLabels.length - 0.5,
+                                 grid: { color: '#EAEAEA' },
+                                 ticks: { 
+                                     stepSize: 1, 
+                                     callback: function(value, index) { 
+                                         if (index >= weekLabels.length) return '';
+                                         const currentMonth = weekLabels[index].split(' ')[0];
+                                         const prevMonth = index > 0 ? weekLabels[index-1].split(' ')[0] : '';
+                                         if (currentMonth !== prevMonth) return currentMonth;
+                                         return '';
+                                     }
+                                 }
+                             },
+                             xAxis2: {
+                                 type: 'linear', position: 'top', min: -0.5, max: weekLabels.length - 0.5,
+                                 grid: { drawOnChartArea: false },
+                                 ticks: { 
+                                     stepSize: 1, 
+                                     callback: function(value, index) { 
+                                         const label = weekLabels[index] || '';
+                                         return label.split(' ')[1] || '';
+                                     }
+                                 }
+                             },
+                             y: { grid: { display: false }, afterFit: (scaleInstance) => { scaleInstance.width += 30; } }
+                         }
+                     }
+                 });
             }
             
-            async function handleDeleteTask(taskId) {
-                if (!taskId || !db) return;
-                try {
-                    await deleteDoc(doc(taskCollection, taskId));
-                } catch (error) {
-                    console.error("Error deleting task:", error);
-                }
-            }
-
-
             function setupEventListeners() {
-                const roadmapSection = document.getElementById('roadmap');
-                roadmapSection.addEventListener('click', (e) => {
+                // Main Roadmap Section (Filters, Add Task)
+                document.getElementById('roadmap').addEventListener('click', (e) => {
                     const targetButton = e.target.closest('button');
                     if (!targetButton) return;
                     if (targetButton.id.startsWith('filter-')) {
-                        const filterId = targetButton.id.replace('filter-', '');
-                        updateChart(filterId);
+                        updateChart(targetButton.id.replace('filter-', ''));
                     } else if (targetButton.id === 'add-task-btn') {
                         openTaskModal();
                     }
                 });
 
+                // Task Modal
                 document.getElementById('close-modal-btn').addEventListener('click', closeTaskModal);
                 taskForm.addEventListener('submit', handleFormSubmit);
-                deleteTaskBtn.addEventListener('click', () => handleDeleteTask(taskIdInput.value));
+                document.getElementById('delete-task-btn').addEventListener('click', () => openDeleteConfirmModal(document.getElementById('task-id').value));
 
+                // Delete Confirmation Modal
+                document.getElementById('confirm-delete-btn').addEventListener('click', handleDeleteTask);
+                document.getElementById('cancel-delete-btn').addEventListener('click', closeDeleteConfirmModal);
+
+                // Gantt Chart Interactivity
                 const ganttCanvas = document.getElementById('ganttChart');
-
                 ganttCanvas.addEventListener('mousemove', (e) => {
-                    const chart = ganttChart;
-                    const canvas = ganttCanvas;
-                    const rect = canvas.getBoundingClientRect();
+                    if (!ganttChart) return;
+                    const rect = ganttCanvas.getBoundingClientRect();
                     const x = e.clientX - rect.left;
                     const y = e.clientY - rect.top;
-
-                    if (y < chart.chartArea.top || y > chart.chartArea.bottom) {
-                        if (hoveredItem.index !== null) {
-                            hoveredItem.index = null;
-                            chart.draw();
-                            canvas.style.cursor = 'default';
-                        }
-                        return;
-                    }
-                    
-                    const meta = chart.getDatasetMeta(0);
+                    const meta = ganttChart.getDatasetMeta(0);
                     let newHoveredIndex = null;
                     for (let i = 0; i < meta.data.length; i++) {
                         const element = meta.data[i];
@@ -649,40 +668,40 @@
                             break;
                         }
                     }
-
                     if (hoveredItem.index !== newHoveredIndex) {
                         hoveredItem.index = newHoveredIndex;
-                        chart.draw();
+                        ganttChart.draw();
                     }
-                    
                     const isOverIcon = hoveredItem.iconBounds && x >= hoveredItem.iconBounds.x && x <= (hoveredItem.iconBounds.x + hoveredItem.iconBounds.width) && y >= hoveredItem.iconBounds.y && y <= (hoveredItem.iconBounds.y + hoveredItem.iconBounds.height);
-                    const isOverBar = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true).length > 0;
-                    
-                    canvas.style.cursor = (isOverIcon || isOverBar) ? 'pointer' : 'default';
+                    const isOverBar = ganttChart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true).length > 0;
+                    ganttCanvas.style.cursor = (isOverIcon || isOverBar) ? 'pointer' : 'default';
                 });
 
                 ganttCanvas.addEventListener('mouseout', () => {
                     if (hoveredItem.index !== null) {
                         hoveredItem.index = null;
                         ganttCanvas.style.cursor = 'default';
-                        ganttChart.draw();
+                        if (ganttChart) ganttChart.draw();
                     }
                 });
 
                 ganttCanvas.addEventListener('click', (e) => {
+                    if (!ganttChart) return;
                     const rect = ganttCanvas.getBoundingClientRect();
                     const x = e.clientX - rect.left;
                     const y = e.clientY - rect.top;
 
+                    // Check for delete icon click
                     if (hoveredItem.index !== null && hoveredItem.iconBounds && x >= hoveredItem.iconBounds.x && x <= (hoveredItem.iconBounds.x + hoveredItem.iconBounds.width) && y >= hoveredItem.iconBounds.y && y <= (hoveredItem.iconBounds.y + hoveredItem.iconBounds.height)) {
                         const filteredTasks = getFilteredTasks(currentFilter);
-                        const taskToDelete = filteredTasks[hoveredItem.index];
-                        if (taskToDelete && taskToDelete.id) {
-                            handleDeleteTask(taskToDelete.id);
+                        const taskToEdit = filteredTasks[hoveredItem.index];
+                        if (taskToEdit && taskToEdit.id) {
+                            openDeleteConfirmModal(taskToEdit.id);
                         }
                         return;
                     }
 
+                    // Check for bar click (for editing)
                     const activePoints = ganttChart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
                     if (activePoints.length > 0) {
                         const { index } = activePoints[0];
@@ -693,7 +712,8 @@
                         }
                     }
                 });
-
+                
+                // --- Other UI Event Listeners (Tabs, Navs, etc.) ---
                 const teamCardsContainer = document.getElementById('team-cards-container');
                 const teamDetailsContainer = document.getElementById('team-details-container');
                 teamCardsContainer.addEventListener('click', (e) => {
@@ -749,7 +769,8 @@
                     else if (e.target.id === 'tab-may-final') document.getElementById('tab-panel-may-final').classList.remove('hidden');
                     else if (e.target.id === 'tab-oct') document.getElementById('tab-panel-oct').classList.remove('hidden');
                 });
-
+                
+                // Video Modal
                 const videoModal = document.getElementById('video-modal');
                 const closeVideoModalBtn = document.getElementById('close-video-modal');
                 const youtubeIframe = document.getElementById('youtube-iframe');
@@ -764,32 +785,95 @@
                 const closeVideoModal = () => { videoModal.classList.add('hidden'); youtubeIframe.src = ""; };
                 closeVideoModalBtn.addEventListener('click', closeVideoModal);
                 videoModal.addEventListener('click', (e) => { if (e.target === videoModal) closeVideoModal(); });
-
+                
+                // Nav Link Active State on Scroll
                 const navLinks = document.querySelectorAll('.nav-link');
                 const sections = document.querySelectorAll('main section');
                 window.addEventListener('scroll', () => {
                     let current = '';
                     sections.forEach(section => {
-                        if (pageYOffset >= section.offsetTop - 80) current = section.getAttribute('id');
+                        if (pageYOffset >= section.offsetTop - 80) {
+                            current = section.getAttribute('id');
+                        }
                     });
                     navLinks.forEach(link => {
                         link.classList.remove('active');
-                        if (link.getAttribute('href').includes(current)) link.classList.add('active');
-                    });
-                });
-
-                navLinks.forEach(link => {
-                    link.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        document.querySelector(link.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
+                        if (link.getAttribute('href').includes(current)) {
+                            link.classList.add('active');
+                        }
                     });
                 });
             }
 
-            // Start the application
-            setupUI();
+            // --- Application Initialization ---
+            async function main() {
+                try {
+                    const firebaseConfig = typeof __firebase_config !== 'undefined'
+                        ? JSON.parse(__firebase_config)
+                        : { apiKey: "AIza...", authDomain: "your-project.firebaseapp.com", projectId: "your-project-id" };
+                    const appId = typeof __app_id !== 'undefined' ? __app_id : 'ggp-plan-local-dev';
+                    
+                    const app = initializeApp(firebaseConfig);
+                    db = getFirestore(app);
+                    auth = getAuth(app);
+                    
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+
+                    // Once auth is ready, set up the rest of the application
+                    taskCollection = collection(db, "artifacts", appId, "public", "data", "roadmap_tasks");
+                    
+                    // Populate initial data if collection is empty
+                    const querySnapshot = await getDocs(taskCollection);
+                    if (querySnapshot.empty) {
+                        const batch = writeBatch(db);
+                        initialTasks.forEach(task => {
+                            const docRef = doc(taskCollection);
+                            batch.set(docRef, task);
+                        });
+                        await batch.commit();
+                    }
+                    
+                    // Listen for real-time updates
+                    onSnapshot(taskCollection, (snapshot) => {
+                        allTasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        
+                        // [IMPROVEMENT] On first load, hide loader and show chart
+                        if (isInitialLoad) {
+                            document.getElementById('loading-indicator').classList.add('hidden');
+                            document.getElementById('ganttChart').classList.remove('hidden');
+                            isInitialLoad = false;
+                        }
+                        
+                        updateChart(currentFilter);
+                    }, (error) => {
+                        console.error("Error fetching data from Firestore:", error);
+                        // Handle error by using local data
+                        allTasks = initialTasks.map(task => ({ ...task, id: crypto.randomUUID() }));
+                        document.getElementById('loading-indicator').classList.add('hidden');
+                        document.getElementById('ganttChart').classList.remove('hidden');
+                        updateChart('all');
+                    });
+
+                } catch (error) {
+                    console.error("Fatal Firebase Initialization Error:", error);
+                     // Handle error by using local data
+                    allTasks = initialTasks.map(task => ({ ...task, id: crypto.randomUUID() }));
+                    document.getElementById('loading-indicator').classList.add('hidden');
+                    document.getElementById('ganttChart').classList.remove('hidden');
+                    setupGanttChart(); // Chart needs to be setup even on error
+                    updateChart('all');
+                }
+            }
+
+            // --- Start the App ---
+            setupStaticUI();
+            setupGanttChart(); // Create chart instance early
             setupEventListeners();
-            initApp();
+            main(); // Initialize Firebase and fetch data
         });
     </script>
 </body>
