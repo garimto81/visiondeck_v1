@@ -30,7 +30,7 @@
         .btn-secondary:hover { background-color: #BDBDBD; }
         .btn.active { background-color: #8B4513; color: white; }
         .section-title::after { content: ''; display: block; width: 50px; height: 3px; background-color: #A0522D; margin-top: 8px; }
-        .chart-container { position: relative; width: 100%; max-width: 1200px; margin-left: auto; margin-right: auto; height: 500px; max-height: 70vh; cursor: pointer; }
+        .chart-container { position: relative; width: 100%; max-width: 1200px; margin-left: auto; margin-right: auto; height: 500px; max-height: 70vh; }
         .camera-icon { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
         .tab-btn { padding: 0.75rem 1.5rem; font-weight: 500; color: #6B7280; border-bottom: 3px solid transparent; transition: all 0.3s ease; }
         .tab-btn.active { color: #A0522D; border-bottom-color: #A0522D; }
@@ -305,6 +305,8 @@
             let allTasks = [];
             let currentFilter = 'all';
             let ganttChart;
+            let hoveredItem = { index: null, iconBounds: null };
+            let weekLabels = []; // [MODIFIED] Initialize as empty
 
             const teamData = [
                 { id: 'aiden', name: 'Aiden Kim', role: '파트 리더', emoji: '👑', color: 'rgba(217, 119, 6, 0.7)', 
@@ -328,20 +330,37 @@
             const memberColorMap = teamData.reduce((acc, member) => { acc[member.id] = member.color; return acc; }, {});
             const memberEmojiMap = teamData.reduce((acc, member) => { acc[member.id] = member.emoji; return acc; }, {});
             
-            const weekLabels = [ '6월 W2','6월 W3','6월 W4','7월 W1','7월 W2','7월 W3','7월 W4','8월 W1','8월 W2','8월 W3','8월 W4','9월 W1','9월 W2','9월 W3','9월 W4','10월 W1' ];
             const PROJECT_START_DATE = new Date('2025-06-09');
             const FIST_DAY_OF_WEEK_OPTIONS = { weekStartsOn: 1 };
             
+            // [NEW] Dynamically generate week labels for accuracy.
+            function generateWeekLabels(startDate, numWeeks) {
+                if (typeof dateFns === 'undefined') return [];
+                const labels = [];
+                const { addWeeks, getMonth, getDate } = dateFns;
+
+                function getWeekOfMonth(date) {
+                    const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+                    const dayOfWeek = firstDayOfMonth.getDay() === 0 ? 6 : firstDayOfMonth.getDay() - 1; // Monday is 0
+                    return Math.ceil((date.getDate() + dayOfWeek) / 7);
+                }
+
+                for (let i = 0; i < numWeeks; i++) {
+                    const weekStartDate = addWeeks(startDate, i);
+                    const month = getMonth(weekStartDate) + 1; // getMonth is 0-indexed
+                    const weekOfMonth = getWeekOfMonth(weekStartDate);
+                    labels.push(`${month}월 W${weekOfMonth}`);
+                }
+                return labels;
+            }
+
             function dateToWeekIndex(dateStr) {
                 if (!dateStr) return 0;
-                if (typeof dateFns === 'undefined') {
-                    console.error('date-fns library is not loaded!');
-                    const diffTime = new Date(dateStr) - PROJECT_START_DATE;
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    return Math.floor(diffDays / 7);
-                }
+                if (typeof dateFns === 'undefined') return 0;
+                
                 const { startOfWeek, differenceInWeeks } = dateFns;
-                const targetDate = new Date(dateStr);
+                // Parse date string as UTC to avoid timezone issues.
+                const targetDate = new Date(dateStr + 'T00:00:00Z');
                 const projectWeekStartDate = startOfWeek(PROJECT_START_DATE, FIST_DAY_OF_WEEK_OPTIONS);
                 return differenceInWeeks(targetDate, projectWeekStartDate, FIST_DAY_OF_WEEK_OPTIONS);
             }
@@ -349,6 +368,61 @@
             const initialTasks = [
                 { phase: '1', label: '프로젝트 총괄 기획', member: 'aiden', startDate: '2025-06-11', endDate: '2025-06-28'}, { phase: '1', label: '5월 MPP 분석 및 레퍼런스 수집', member: 'kai', startDate: '2025-06-11', endDate: '2025-06-21'}, { phase: '1', label: 'A컷 스타일가이드 V0.1', member: 'kai', startDate: '2025-06-24', endDate: '2025-06-28'}, { phase: '1', label: '18캠 시스템 구성/요구사항 정의', member: 'matthew', startDate: '2025-06-11', endDate: '2025-06-21'}, { phase: '1', label: '6GHz 시스템 리서치/준비', member: 'matthew', startDate: '2025-06-24', endDate: '2025-07-05'}, { phase: '2', label: '신규 스위처 분석/설계', member: 'trey', startDate: '2025-08-05', endDate: '2025-08-16'}, { phase: '2', label: '팀 R&D 진행상황 점검/피드백', member: 'aiden', startDate: '2025-07-01', endDate: '2025-08-16'}, { phase: '2', label: 'R&D: "킥 엣지" 디자인', member: 'aiden', startDate: '2025-08-19', endDate: '2025-08-23'}, { phase: '2', label: '기술 통합 및 최종 점검', member: 'aiden', startDate: '2025-08-26', endDate: '2025-08-30'}, { phase: '2', label: 'R&D: 구도/앵글 심화', member: 'kai', startDate: '2025-07-01', endDate: '2025-07-12'}, { phase: '2', label: 'R&D: 색감/톤앤매너', member: 'kai', startDate: '2025-07-15', endDate: '2025-07-26'}, { phase: '2', label: 'R&D: 배경/DoF 및 6GHz 테스트', member: 'kai', startDate: '2025-07-29', endDate: '2025-08-16'}, { phase: '2', label: 'A컷 스타일가이드 V1.0 최종화', member: 'kai', startDate: '2025-08-19', endDate: '2025-08-30'}, { phase: '2', label: 'R&D: 조명 시스템 설계', member: 'matthew', startDate: '2025-07-08', endDate: '2025-07-19'}, { phase: '2', label: 'FR7 및 고정캠 최적화 R&D', member: 'matthew', startDate: '2025-07-22', endDate: '2025-08-02'}, { phase: '2', label: '사이프러스 물류/운송 계획', member: 'matthew', startDate: '2025-08-05', endDate: '2025-08-30'}, { phase: '2', label: '스위처 개발 및 GFX/아카이빙 연동', member: 'trey', startDate: '2025-08-19', endDate: '2025-08-30'}, { phase: '3', label: '리허설 총괄', member: 'aiden', startDate: '2025-09-02', endDate: '2025-09-27'}, { phase: '3', label: '리허설 (미학/연출 점검)', member: 'kai', startDate: '2025-09-02', endDate: '2025-09-27'}, { phase: '3', label: '리허설 (기술 지원)', member: 'matthew', startDate: '2025-09-02', endDate: '2025-09-27'}, { phase: '3', label: '리허설 (스위처 통합 테스트)', member: 'trey', startDate: '2025-09-02', endDate: '2025-09-27'}, { phase: '4', label: '최종 패킹 및 출국 준비', member: 'aiden', startDate: '2025-09-30', endDate: '2025-10-04'}, { phase: '4', label: '최종 패킹 및 출국 준비', member: 'kai', startDate: '2025-09-30', endDate: '2025-10-04'}, { phase: '4', label: '최종 패킹 및 출국 준비', member: 'matthew', startDate: '2025-09-30', endDate: '2025-10-04'}, { phase: '4', label: '최종 패킹 및 출국 준비', member: 'trey', startDate: '2025-09-30', endDate: '2025-10-04'},
             ].map(task => ({ ...task, start: dateToWeekIndex(task.startDate), end: dateToWeekIndex(task.endDate) }));
+            
+            function drawTrashIcon(ctx, x, y, size) {
+                const topWidth = size * 0.7;
+                const bottomWidth = size * 0.6;
+                const height = size * 0.8;
+                const lidHeight = size * 0.15;
+                const handleHeight = size * 0.1;
+
+                ctx.save();
+                ctx.strokeStyle = '#e53e3e';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.rect(x - topWidth / 2, y - height / 2 - lidHeight, topWidth, lidHeight);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(x - size*0.15, y - height / 2 - lidHeight);
+                ctx.lineTo(x - size*0.15, y - height / 2 - lidHeight - handleHeight);
+                ctx.moveTo(x + size*0.15, y - height / 2 - lidHeight);
+                ctx.lineTo(x + size*0.15, y - height / 2 - lidHeight - handleHeight);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(x - topWidth / 2, y - height / 2);
+                ctx.lineTo(x - bottomWidth / 2, y + height / 2);
+                ctx.lineTo(x + bottomWidth / 2, y + height / 2);
+                ctx.lineTo(x + topWidth / 2, y - height / 2);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            const ganttRowActionsPlugin = {
+                id: 'ganttRowActions',
+                afterDraw: (chart) => {
+                    if (hoveredItem.index !== null) {
+                        const ctx = chart.ctx;
+                        const meta = chart.getDatasetMeta(0);
+                        if (hoveredItem.index >= meta.data.length) return;
+                        const element = meta.data[hoveredItem.index];
+                        if (!element || element.y < chart.chartArea.top || element.y > chart.chartArea.bottom) return;
+                        
+                        const y = element.y;
+                        const iconSize = 14;
+                        const padding = 20;
+                        const x = padding;
+
+                        drawTrashIcon(ctx, x, y, iconSize);
+
+                        hoveredItem.iconBounds = {
+                            x: x - (iconSize / 2), y: y - (iconSize / 2),
+                            width: iconSize, height: iconSize
+                        };
+                    } else {
+                        hoveredItem.iconBounds = null;
+                    }
+                }
+            };
 
             function getFilteredTasks(filter) {
                 if (filter === 'all' || filter.startsWith('phase')) {
@@ -360,19 +434,32 @@
             function updateChart(filter) {
                 currentFilter = filter;
                 const filteredTasks = getFilteredTasks(filter);
-
                 if (!ganttChart) return;
-
+                
+                // [MODIFIED] Update chart labels and axis based on dynamically generated labels
                 ganttChart.data.labels = filteredTasks.map(d => `${memberEmojiMap[d.member]} ${d.label}`);
                 ganttChart.data.datasets[0].data = filteredTasks.map(d => [d.start, d.end + 1]);
                 ganttChart.data.datasets[0].backgroundColor = filteredTasks.map(d => memberColorMap[d.member] || 'gray');
+                
+                ganttChart.options.scales.x.max = weekLabels.length - 0.5;
+                ganttChart.options.scales.xAxis2.max = weekLabels.length - 0.5;
+                ganttChart.options.scales.xAxis2.ticks.callback = function(value, index) { 
+                    const label = weekLabels[index] || ''; 
+                    return label.split(' ')[1] || ''; 
+                };
+                 ganttChart.options.scales.x.ticks.callback = function(value, index) { 
+                    if (index >= weekLabels.length) return '';
+                    const currentMonth = weekLabels[index].split(' ')[0]; 
+                    const prevMonth = index > 0 ? weekLabels[index - 1].split(' ')[0] : '';
+                    if (currentMonth !== prevMonth) return currentMonth;
+                    return '';
+                 };
+
                 ganttChart.update();
 
                 document.querySelectorAll('#roadmap .btn').forEach(b => { 
-                    b.classList.remove('active', 'btn-primary'); 
-                    b.classList.add('btn-secondary'); 
+                    b.classList.remove('active', 'btn-primary'); b.classList.add('btn-secondary'); 
                 });
-                
                 const activeFilterButton = document.getElementById(`filter-${filter}`);
                 if (activeFilterButton) {
                     activeFilterButton.classList.add('active', 'btn-primary');
@@ -383,39 +470,22 @@
             async function initApp() {
                 const firebaseConfig = typeof __firebase_config !== 'undefined'
                     ? JSON.parse(__firebase_config)
-                    : { 
-                        apiKey: "AIzaSy...", 
-                        authDomain: "your-project.firebaseapp.com",
-                        projectId: "your-project-id"
-                    };
-                
+                    : { apiKey: "AIzaSy...", authDomain: "your-project.firebaseapp.com", projectId: "your-project-id" };
                 const appId = typeof __app_id !== 'undefined' ? __app_id : 'ggp-plan-local-dev';
-
                 try {
                     const app = initializeApp(firebaseConfig);
                     db = getFirestore(app);
                     auth = getAuth(app);
-
                     if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                         await signInWithCustomToken(auth, __initial_auth_token);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
-                    console.log("Authentication successful. User UID:", auth.currentUser?.uid);
-
+                    } else { await signInAnonymously(auth); }
                     taskCollection = collection(db, "artifacts", appId, "public", "data", "roadmap_tasks");
-
                     const querySnapshot = await getDocs(taskCollection);
                     if (querySnapshot.empty) {
-                        console.log("No tasks found in Firestore, initializing with default tasks.");
                         const batch = writeBatch(db);
-                        initialTasks.forEach(task => {
-                            const newDocRef = doc(taskCollection);
-                            batch.set(newDocRef, task);
-                        });
+                        initialTasks.forEach(task => { batch.set(doc(taskCollection), task); });
                         await batch.commit();
                     }
-
                     onSnapshot(taskCollection, (snapshot) => {
                         allTasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                         updateChart(currentFilter);
@@ -424,7 +494,6 @@
                         allTasks = initialTasks.map(task => ({ ...task, id: crypto.randomUUID() }));
                         updateChart('all');
                     });
-
                 } catch (error) {
                     console.error("Fatal Firebase Initialization Error:", error);
                     allTasks = initialTasks.map(task => ({ ...task, id: crypto.randomUUID() }));
@@ -433,6 +502,9 @@
             }
             
             function setupUI() {
+                // [MODIFIED] Generate labels dynamically
+                weekLabels = generateWeekLabels(PROJECT_START_DATE, 20);
+
                 const teamCardsContainer = document.getElementById('team-cards-container');
                 teamData.forEach(member => {
                     const card = document.createElement('div');
@@ -454,43 +526,26 @@
                 const ctx = document.getElementById('ganttChart').getContext('2d');
                 ganttChart = new Chart(ctx, { 
                     type: 'bar', 
-                    data: { 
-                        labels: [], 
-                        datasets: [{ data: [], barPercentage: 0.6, borderRadius: 4 }] 
-                    },
+                    data: { labels: [], datasets: [{ data: [], barPercentage: 0.6, borderRadius: 4 }] },
+                    plugins: [ganttRowActionsPlugin],
                     options: { 
-                        onClick: (e) => {
-                            const activePoints = ganttChart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
-                            if (activePoints.length > 0) {
-                                const { index } = activePoints[0];
-                                const filteredTasks = getFilteredTasks(currentFilter);
-                                const clickedTask = filteredTasks[index];
-                                if (clickedTask && clickedTask.id) {
-                                    openTaskModal(clickedTask);
-                                }
-                            }
-                        },
                         indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-                        plugins: { legend: { display: false },
+                        plugins: { 
+                            ganttRowActions: {}, legend: { display: false },
                             tooltip: { callbacks: {
                                 label: function(context) { const startWeek = weekLabels[context.raw[0]]; const endWeek = weekLabels[context.raw[1] - 1]; if(!startWeek || !endWeek) return ''; const labelText = context.chart.data.labels[context.dataIndex].substring(2); if(startWeek === endWeek) return `${labelText}: ${startWeek}`; return `${labelText}: ${startWeek} ~ ${endWeek}`; }
                             }}
                         },
                         scales: { x: { type: 'linear', position: 'top', min: -0.5, max: weekLabels.length - 0.5,
-                                ticks: { stepSize: 1, callback: function(value, index) { if (index >= weekLabels.length) return ''; const currentMonth = weekLabels[index].split(' ')[0]; const prevMonth = index > 0 ? weekLabels[index - 1].split(' ')[0] : ''; if (currentMonth !== prevMonth) return currentMonth; return ''; }},
-                                grid: { drawOnChartArea: false }
-                            },
+                                ticks: { stepSize: 1, callback: function(value, index) { /* Callback will be set in updateChart */ }}},
                             xAxis2: { type: 'linear', position: 'top', min: -0.5, max: weekLabels.length - 0.5,
-                                ticks: { stepSize: 1, callback: function(value, index) { const label = weekLabels[index] || ''; return label.split(' ')[1] || ''; }},
-                                grid: { color: 'rgba(0,0,0,0.05)' }
-                            },
-                            y: { grid: { display: false } }
+                                ticks: { stepSize: 1, callback: function(value, index) { /* Callback will be set in updateChart */ }}},
+                            y: { grid: { display: false }, afterFit: (scaleInstance) => { scaleInstance.width += 30; } }
                         }
                     }
                 });
             }
 
-            // --- [NEW] Task Modal Management ---
             const taskModal = document.getElementById('task-modal');
             const taskForm = document.getElementById('task-form');
             const modalTitle = document.getElementById('modal-title');
@@ -504,7 +559,7 @@
 
             function openTaskModal(task = null) {
                 taskForm.reset();
-                if (task) { // Editing existing task
+                if (task) { 
                     modalTitle.textContent = '업무 수정';
                     taskIdInput.value = task.id;
                     taskLabelInput.value = task.label;
@@ -513,7 +568,7 @@
                     taskEndInput.value = task.endDate;
                     taskPhaseInput.value = task.phase;
                     deleteTaskBtn.classList.remove('hidden');
-                } else { // Adding new task
+                } else {
                     modalTitle.textContent = '업무 추가';
                     taskIdInput.value = '';
                     deleteTaskBtn.classList.add('hidden');
@@ -521,52 +576,31 @@
                 taskModal.classList.remove('hidden');
             }
 
-            function closeTaskModal() {
-                taskModal.classList.add('hidden');
-            }
+            function closeTaskModal() { taskModal.classList.add('hidden'); }
 
             async function handleFormSubmit(e) {
                 e.preventDefault();
-                if (!db) {
-                    console.error("Firestore is not initialized.");
-                    return;
-                }
+                if (!db) { console.error("Firestore is not initialized."); return; }
                 const taskId = taskIdInput.value;
                 const taskData = {
-                    label: taskLabelInput.value,
-                    member: taskMemberInput.value,
-                    startDate: taskStartInput.value,
-                    endDate: taskEndInput.value,
-                    phase: taskPhaseInput.value,
-                    start: dateToWeekIndex(taskStartInput.value),
+                    label: taskLabelInput.value, member: taskMemberInput.value,
+                    startDate: taskStartInput.value, endDate: taskEndInput.value,
+                    phase: taskPhaseInput.value, start: dateToWeekIndex(taskStartInput.value),
                     end: dateToWeekIndex(taskEndInput.value),
                 };
-
                 try {
-                    if (taskId) { // Update existing task
-                        const taskRef = doc(taskCollection, taskId);
-                        await setDoc(taskRef, taskData);
-                    } else { // Add new task
-                        await addDoc(taskCollection, taskData);
-                    }
+                    if (taskId) { await setDoc(doc(taskCollection, taskId), taskData); } 
+                    else { await addDoc(taskCollection, taskData); }
                     closeTaskModal();
-                } catch (error) {
-                    console.error("Error saving task:", error);
-                }
+                } catch (error) { console.error("Error saving task:", error); }
             }
             
-            async function handleDeleteTask() {
-                const taskId = taskIdInput.value;
+            async function handleDeleteTask(taskId) {
                 if (!taskId || !db) return;
-                
-                // A simple confirmation before deleting
-                if (confirm(`'${taskLabelInput.value}' 업무를 정말 삭제하시겠습니까?`)) {
-                    try {
-                        await deleteDoc(doc(taskCollection, taskId));
-                        closeTaskModal();
-                    } catch (error) {
-                        console.error("Error deleting task:", error);
-                    }
+                try {
+                    await deleteDoc(doc(taskCollection, taskId));
+                } catch (error) {
+                    console.error("Error deleting task:", error);
                 }
             }
 
@@ -576,19 +610,89 @@
                 roadmapSection.addEventListener('click', (e) => {
                     const targetButton = e.target.closest('button');
                     if (!targetButton) return;
-
                     if (targetButton.id.startsWith('filter-')) {
                         const filterId = targetButton.id.replace('filter-', '');
                         updateChart(filterId);
                     } else if (targetButton.id === 'add-task-btn') {
-                        openTaskModal(); // Open modal for adding a new task
+                        openTaskModal();
                     }
                 });
 
                 document.getElementById('close-modal-btn').addEventListener('click', closeTaskModal);
                 taskForm.addEventListener('submit', handleFormSubmit);
-                deleteTaskBtn.addEventListener('click', handleDeleteTask);
+                deleteTaskBtn.addEventListener('click', () => handleDeleteTask(taskIdInput.value));
 
+                const ganttCanvas = document.getElementById('ganttChart');
+
+                ganttCanvas.addEventListener('mousemove', (e) => {
+                    const chart = ganttChart;
+                    const canvas = ganttCanvas;
+                    const rect = canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+
+                    if (y < chart.chartArea.top || y > chart.chartArea.bottom) {
+                        if (hoveredItem.index !== null) {
+                            hoveredItem.index = null;
+                            chart.draw();
+                            canvas.style.cursor = 'default';
+                        }
+                        return;
+                    }
+                    
+                    const meta = chart.getDatasetMeta(0);
+                    let newHoveredIndex = null;
+                    for (let i = 0; i < meta.data.length; i++) {
+                        const element = meta.data[i];
+                        if (y >= element.y - element.height / 2 && y <= element.y + element.height / 2) {
+                            newHoveredIndex = i;
+                            break;
+                        }
+                    }
+
+                    if (hoveredItem.index !== newHoveredIndex) {
+                        hoveredItem.index = newHoveredIndex;
+                        chart.draw();
+                    }
+                    
+                    const isOverIcon = hoveredItem.iconBounds && x >= hoveredItem.iconBounds.x && x <= (hoveredItem.iconBounds.x + hoveredItem.iconBounds.width) && y >= hoveredItem.iconBounds.y && y <= (hoveredItem.iconBounds.y + hoveredItem.iconBounds.height);
+                    const isOverBar = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true).length > 0;
+                    
+                    canvas.style.cursor = (isOverIcon || isOverBar) ? 'pointer' : 'default';
+                });
+
+                ganttCanvas.addEventListener('mouseout', () => {
+                    if (hoveredItem.index !== null) {
+                        hoveredItem.index = null;
+                        ganttCanvas.style.cursor = 'default';
+                        ganttChart.draw();
+                    }
+                });
+
+                ganttCanvas.addEventListener('click', (e) => {
+                    const rect = ganttCanvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+
+                    if (hoveredItem.index !== null && hoveredItem.iconBounds && x >= hoveredItem.iconBounds.x && x <= (hoveredItem.iconBounds.x + hoveredItem.iconBounds.width) && y >= hoveredItem.iconBounds.y && y <= (hoveredItem.iconBounds.y + hoveredItem.iconBounds.height)) {
+                        const filteredTasks = getFilteredTasks(currentFilter);
+                        const taskToDelete = filteredTasks[hoveredItem.index];
+                        if (taskToDelete && taskToDelete.id) {
+                            handleDeleteTask(taskToDelete.id);
+                        }
+                        return;
+                    }
+
+                    const activePoints = ganttChart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
+                    if (activePoints.length > 0) {
+                        const { index } = activePoints[0];
+                        const filteredTasks = getFilteredTasks(currentFilter);
+                        const clickedTask = filteredTasks[index];
+                        if (clickedTask && clickedTask.id) {
+                            openTaskModal(clickedTask);
+                        }
+                    }
+                });
 
                 const teamCardsContainer = document.getElementById('team-cards-container');
                 const teamDetailsContainer = document.getElementById('team-details-container');
