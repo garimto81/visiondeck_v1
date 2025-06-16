@@ -8,7 +8,7 @@
     <!-- Visualization & Content Choices: Report Info: Project Timeline -> Goal: Organize & Change -> Viz: Interactive Gantt Chart (Chart.js) with Firebase backend -> Interaction: Add, Edit, Delete tasks dynamically. Filter by phase/person -> Justification: Allows real-time, collaborative editing and easy visualization of the entire project schedule and individual responsibilities over time. Report Info: Team Roles & Tasks -> Goal: Organize & Inform -> Viz: Interactive HTML/CSS Cards -> Interaction: Click to expand -> Justification: Presents a clean overview of the team, with details available on demand to avoid clutter. Report Info: Camera Setup -> Goal: Inform -> Viz: HTML/CSS Diagram -> Interaction: Hover for info -> Justification: A visual representation is more intuitive than a text list for understanding the complex 18-camera setup. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 
-    <title>지지 프로덕션 2025 WSOP Cyprus 인터랙티브 계획서 V2</title>
+    <title>지지 프로덕션 2025 WSOP Cyprus 인터랙티브 계획서 V3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
@@ -232,12 +232,12 @@
                     <button id="filter-trey" class="btn btn-secondary px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm">🕹️ Trey</button>
                 </div>
                 <div class="chart-container">
-                    <!-- [NEW] Loading indicator will be shown initially -->
+                    <!-- Loading indicator will be shown initially -->
                     <div id="loading-indicator" class="flex flex-col items-center justify-center h-full">
                         <div class="loader"></div>
                         <p class="mt-4 text-gray-600">데이터를 불러오는 중입니다...</p>
                     </div>
-                    <!-- [NEW] Empty state message, hidden by default -->
+                    <!-- Empty state message, hidden by default -->
                     <div id="empty-state-message" class="hidden flex items-center justify-center h-full">
                         <p class="text-gray-500 text-lg">해당하는 업무가 없습니다.</p>
                     </div>
@@ -301,7 +301,7 @@
         </div>
     </div>
     
-    <!-- [NEW] Delete Confirmation Modal -->
+    <!-- Delete Confirmation Modal -->
     <div id="delete-confirm-modal" class="modal-overlay fixed inset-0 z-[60] flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-sm">
             <div class="p-6 text-center">
@@ -457,7 +457,6 @@
                 const ganttCanvas = document.getElementById('ganttChart');
                 const emptyStateMessage = document.getElementById('empty-state-message');
                 
-                // [IMPROVEMENT] Handle empty state
                 if (filteredTasks.length === 0) {
                     ganttCanvas.classList.add('hidden');
                     emptyStateMessage.classList.remove('hidden');
@@ -467,12 +466,11 @@
                 }
 
                 ganttChart.data.labels = filteredTasks.map(d => `${memberEmojiMap[d.member] || '❓'} ${d.label}`);
-                ganttChart.data.datasets[0].data = filteredTasks.map(d => [d.start, d.end + 1]); // +1 to make the end date inclusive
+                ganttChart.data.datasets[0].data = filteredTasks.map(d => [d.start, d.end + 1]);
                 ganttChart.data.datasets[0].backgroundColor = filteredTasks.map(d => memberColorMap[d.member] || 'gray');
                 
                 ganttChart.update();
 
-                // Update filter button styles
                 document.querySelectorAll('#roadmap .btn').forEach(b => { 
                     b.classList.remove('active', 'btn-primary');
                     b.classList.add('btn-secondary'); 
@@ -509,7 +507,6 @@
             }
             function closeTaskModal() { taskModal.classList.add('hidden'); }
             
-            // [NEW] Delete confirmation modal functions
             function openDeleteConfirmModal(taskId) {
                 taskToDeleteId = taskId;
                 deleteConfirmModal.classList.remove('hidden');
@@ -556,20 +553,19 @@
 
             // --- UI & Event Setup ---
             function setupStaticUI() {
-                // Team Cards
+                // Team Cards & Task Modal Member Select
                 const teamCardsContainer = document.getElementById('team-cards-container');
+                const taskMemberSelect = document.getElementById('task-member');
                 teamData.forEach(member => {
+                    // Card
                     const card = document.createElement('div');
                     card.className = `card p-6 rounded-xl text-center cursor-pointer member-card border-2 border-transparent`;
                     card.style.backgroundColor = member.color.replace('0.7', '0.1');
                     card.dataset.memberId = member.id;
                     card.innerHTML = `<div class="text-5xl mb-3">${member.emoji}</div><h4 class="text-xl font-bold text-gray-800">${member.name}</h4><p class="font-semibold" style="color: ${member.color.replace('0.7', '1')}">${member.role}</p>`;
                     teamCardsContainer.appendChild(card);
-                });
-                
-                // Task Modal Member Select
-                const taskMemberSelect = document.getElementById('task-member');
-                teamData.forEach(member => {
+                    
+                    // Option
                     const option = document.createElement('option');
                     option.value = member.id;
                     option.textContent = `${member.emoji} ${member.name}`;
@@ -578,6 +574,8 @@
             }
 
             function setupGanttChart() {
+                 // [FIX] Prevent chart re-initialization
+                 if (ganttChart) return;
                  weekLabels = generateWeekLabels(PROJECT_START_DATE, 20);
                  const ctx = document.getElementById('ganttChart').getContext('2d');
                  ganttChart = new Chart(ctx, { 
@@ -690,8 +688,6 @@
                     const rect = ganttCanvas.getBoundingClientRect();
                     const x = e.clientX - rect.left;
                     const y = e.clientY - rect.top;
-
-                    // Check for delete icon click
                     if (hoveredItem.index !== null && hoveredItem.iconBounds && x >= hoveredItem.iconBounds.x && x <= (hoveredItem.iconBounds.x + hoveredItem.iconBounds.width) && y >= hoveredItem.iconBounds.y && y <= (hoveredItem.iconBounds.y + hoveredItem.iconBounds.height)) {
                         const filteredTasks = getFilteredTasks(currentFilter);
                         const taskToEdit = filteredTasks[hoveredItem.index];
@@ -700,8 +696,6 @@
                         }
                         return;
                     }
-
-                    // Check for bar click (for editing)
                     const activePoints = ganttChart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
                     if (activePoints.length > 0) {
                         const { index } = activePoints[0];
@@ -713,7 +707,7 @@
                     }
                 });
                 
-                // --- Other UI Event Listeners (Tabs, Navs, etc.) ---
+                // Other UI Event Listeners
                 const teamCardsContainer = document.getElementById('team-cards-container');
                 const teamDetailsContainer = document.getElementById('team-details-container');
                 teamCardsContainer.addEventListener('click', (e) => {
@@ -770,7 +764,6 @@
                     else if (e.target.id === 'tab-oct') document.getElementById('tab-panel-oct').classList.remove('hidden');
                 });
                 
-                // Video Modal
                 const videoModal = document.getElementById('video-modal');
                 const closeVideoModalBtn = document.getElementById('close-video-modal');
                 const youtubeIframe = document.getElementById('youtube-iframe');
@@ -786,21 +779,16 @@
                 closeVideoModalBtn.addEventListener('click', closeVideoModal);
                 videoModal.addEventListener('click', (e) => { if (e.target === videoModal) closeVideoModal(); });
                 
-                // Nav Link Active State on Scroll
                 const navLinks = document.querySelectorAll('.nav-link');
                 const sections = document.querySelectorAll('main section');
                 window.addEventListener('scroll', () => {
                     let current = '';
                     sections.forEach(section => {
-                        if (pageYOffset >= section.offsetTop - 80) {
-                            current = section.getAttribute('id');
-                        }
+                        if (pageYOffset >= section.offsetTop - 80) current = section.getAttribute('id');
                     });
                     navLinks.forEach(link => {
                         link.classList.remove('active');
-                        if (link.getAttribute('href').includes(current)) {
-                            link.classList.add('active');
-                        }
+                        if (link.getAttribute('href').includes(current)) link.classList.add('active');
                     });
                 });
             }
@@ -808,9 +796,20 @@
             // --- Application Initialization ---
             async function main() {
                 try {
+                    // [FIX] Updated Firebase config placeholder for clarity.
+                    // When deploying to a live server (like GitHub Pages),
+                    // replace this placeholder with your actual Firebase project configuration object.
                     const firebaseConfig = typeof __firebase_config !== 'undefined'
                         ? JSON.parse(__firebase_config)
-                        : { apiKey: "AIza...", authDomain: "your-project.firebaseapp.com", projectId: "your-project-id" };
+                        : {
+                            apiKey: "YOUR_API_KEY",
+                            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+                            projectId: "YOUR_PROJECT_ID",
+                            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+                            messagingSenderId: "YOUR_SENDER_ID",
+                            appId: "YOUR_APP_ID"
+                        };
+
                     const appId = typeof __app_id !== 'undefined' ? __app_id : 'ggp-plan-local-dev';
                     
                     const app = initializeApp(firebaseConfig);
@@ -822,36 +821,26 @@
                     } else {
                         await signInAnonymously(auth);
                     }
-
-                    // Once auth is ready, set up the rest of the application
+                    
                     taskCollection = collection(db, "artifacts", appId, "public", "data", "roadmap_tasks");
                     
-                    // Populate initial data if collection is empty
                     const querySnapshot = await getDocs(taskCollection);
                     if (querySnapshot.empty) {
                         const batch = writeBatch(db);
-                        initialTasks.forEach(task => {
-                            const docRef = doc(taskCollection);
-                            batch.set(docRef, task);
-                        });
+                        initialTasks.forEach(task => { batch.set(doc(taskCollection), task); });
                         await batch.commit();
                     }
                     
-                    // Listen for real-time updates
                     onSnapshot(taskCollection, (snapshot) => {
                         allTasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                        
-                        // [IMPROVEMENT] On first load, hide loader and show chart
                         if (isInitialLoad) {
                             document.getElementById('loading-indicator').classList.add('hidden');
                             document.getElementById('ganttChart').classList.remove('hidden');
                             isInitialLoad = false;
                         }
-                        
                         updateChart(currentFilter);
                     }, (error) => {
                         console.error("Error fetching data from Firestore:", error);
-                        // Handle error by using local data
                         allTasks = initialTasks.map(task => ({ ...task, id: crypto.randomUUID() }));
                         document.getElementById('loading-indicator').classList.add('hidden');
                         document.getElementById('ganttChart').classList.remove('hidden');
@@ -860,20 +849,19 @@
 
                 } catch (error) {
                     console.error("Fatal Firebase Initialization Error:", error);
-                     // Handle error by using local data
                     allTasks = initialTasks.map(task => ({ ...task, id: crypto.randomUUID() }));
                     document.getElementById('loading-indicator').classList.add('hidden');
                     document.getElementById('ganttChart').classList.remove('hidden');
-                    setupGanttChart(); // Chart needs to be setup even on error
+                    // [FIX] Removed redundant chart setup call on error
                     updateChart('all');
                 }
             }
 
             // --- Start the App ---
             setupStaticUI();
-            setupGanttChart(); // Create chart instance early
+            setupGanttChart();
             setupEventListeners();
-            main(); // Initialize Firebase and fetch data
+            main();
         });
     </script>
 </body>
