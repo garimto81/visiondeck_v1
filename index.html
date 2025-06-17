@@ -8,7 +8,7 @@
     <!-- Visualization & Content Choices: Report Info: Project Timeline -> Goal: Organize & Change -> Viz: Interactive Gantt Chart (Chart.js) with Firebase backend -> Interaction: Add, Edit, Delete tasks dynamically. Filter by phase/person -> Justification: Allows real-time, collaborative editing and easy visualization of the entire project schedule and individual responsibilities over time. Report Info: Team Roles & Tasks -> Goal: Organize & Inform -> Viz: Interactive HTML/CSS Cards -> Interaction: Click to expand -> Justification: Presents a clean overview of the team, with details available on demand to avoid clutter. Report Info: Camera Setup -> Goal: Inform -> Viz: HTML/CSS Diagram -> Interaction: Hover for info -> Justification: A visual representation is more intuitive than a text list for understanding the complex 18-camera setup. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 
-    <title>지지 프로덕션 2025 WSOP Cyprus 인터랙티브 계획서 V3</title>
+    <title>지지 프로덕션 2025 WSOP Cyprus 인터랙티브 계획서 V4</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
@@ -64,8 +64,8 @@
 
     <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <section id="vision" class="text-center mb-20">
-            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">프로젝트 비전</h2>
-            <p class="text-5xl md:text-6xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-amber-700 to-stone-700 py-4">"정적 화면의 정점"을 향하여</p>
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">카메라 파트 비전</h2>
+            <p class="text-5xl md:text-6xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-amber-700 to-stone-700 py-4">"최고 수준의 앵글"을 향하여</p>
             <p class="max-w-3xl mx-auto text-lg text-gray-600 mt-4">
                 모든 샷은 그 자체로 완벽한 미학적 가치를 지니며, <br> 결정적 순간에는 압도적인 연출로 시청자의 감정을 사로잡을 것입니다.
             </p>
@@ -77,7 +77,7 @@
                 <div class="card p-8 rounded-xl shadow-lg">
                     <div class="flex items-center mb-4">
                         <span class="text-3xl mr-4">💎</span>
-                        <h3 class="text-2xl font-bold text-gray-800">보편적 엣지 (Universal Edge)</h3>
+                        <h3 class="text-2xl font-bold text-gray-800">기본 엣지</h3>
                     </div>
                     <p class="text-gray-600 mb-2 font-semibold">"정적 화면의 정점"</p>
                     <p class="text-gray-600">
@@ -87,7 +87,7 @@
                 <div class="card p-8 rounded-xl shadow-lg relative group overflow-hidden">
                     <div class="flex items-center mb-4">
                         <span class="text-3xl mr-4">🔥</span>
-                        <h3 class="text-2xl font-bold text-gray-800">킥 엣지 (Kick Edge)</h3>
+                        <h3 class="text-2xl font-bold text-gray-800">킥 엣지</h3>
                     </div>
                     <p class="text-gray-600 mb-2 font-semibold">"핵심 핸드의 다이나믹한 연출"</p>
                     <p class="text-gray-600">
@@ -439,14 +439,35 @@
             
             // --- UI Update Functions ---
             function getFilteredTasks(filter) {
+                let filteredTasks;
+
                 if (filter === 'all') {
-                    return [...allTasks].sort((a,b) => a.start - b.start);
+                    filteredTasks = [...allTasks];
                 } else if (filter.startsWith('phase')) {
                     const phaseFilter = filter.replace('phase', '');
-                    return allTasks.filter(task => task.phase === phaseFilter);
-                } else {
-                    return allTasks.filter(task => task.member === filter);
+                    filteredTasks = allTasks.filter(task => task.phase === phaseFilter);
+                } else { // Member filter
+                    filteredTasks = allTasks.filter(task => task.member === filter);
                 }
+
+                // [MODIFICATION] Always sort tasks by start date, then by end date.
+                // This ensures the earliest tasks always appear at the top.
+                return filteredTasks.sort((a, b) => {
+                    const startDateA = new Date(a.startDate);
+                    const startDateB = new Date(b.startDate);
+
+                    if (startDateA < startDateB) return -1;
+                    if (startDateA > startDateB) return 1;
+
+                    // If start dates are identical, sort by end date
+                    const endDateA = new Date(a.endDate);
+                    const endDateB = new Date(b.endDate);
+                    
+                    if (endDateA < endDateB) return -1;
+                    if (endDateA > endDateB) return 1;
+
+                    return 0;
+                });
             }
 
             function updateChart(filter) {
@@ -799,15 +820,27 @@
                     // [FIX] Updated Firebase config placeholder for clarity.
                     // When deploying to a live server (like GitHub Pages),
                     // replace this placeholder with your actual Firebase project configuration object.
-                    const firebaseConfig = {
-                      apiKey: "AIzaSyBqJL9rF1UFH2F9glfYQixAiOMxD0aooPg",
-                      authDomain: "ggp-camera-plan.firebaseapp.com",
-                      projectId: "ggp-camera-plan",
-                      storageBucket: "ggp-camera-plan.firebasestorage.app",
-                      messagingSenderId: "108052983282",
-                      appId: "1:108052983282:web:39f8b769a628f81c7d8f6b",
-                      measurementId: "G-M2NDS5T0GF"
-                    };
+                // Import the functions you need from the SDKs you need
+                import { initializeApp } from "firebase/app";
+                import { getAnalytics } from "firebase/analytics";
+                // TODO: Add SDKs for Firebase products that you want to use
+                // https://firebase.google.com/docs/web/setup#available-libraries
+                
+                // Your web app's Firebase configuration
+                // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+                const firebaseConfig = {
+                  apiKey: "AIzaSyBqJL9rF1UFH2F9glfYQixAiOMxD0aooPg",
+                  authDomain: "ggp-camera-plan.firebaseapp.com",
+                  projectId: "ggp-camera-plan",
+                  storageBucket: "ggp-camera-plan.firebasestorage.app",
+                  messagingSenderId: "108052983282",
+                  appId: "1:108052983282:web:39f8b769a628f81c7d8f6b",
+                  measurementId: "G-M2NDS5T0GF"
+                };
+                
+                // Initialize Firebase
+                const app = initializeApp(firebaseConfig);
+                const analytics = getAnalytics(app);
 
                     const appId = typeof __app_id !== 'undefined' ? __app_id : 'ggp-plan-local-dev';
                     
