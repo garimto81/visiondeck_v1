@@ -178,7 +178,7 @@
                         <li>📹 Sony FR7 (PTZ) x 4</li>
                         <li>🎥 인물 고정 캠 x 1</li>
                         <li>📹 보드 캠 (FR7) x 1</li>
-                        <li>📷 탑 캠 (Overhead) x 1</li>
+                        <li>� 탑 캠 (Overhead) x 1</li>
                         <li>🎥 프리 캠 (Freelance) x 1</li>
                         <li>🎥 풀 샷 캠 (Full Shot) x 1</li>
                         <li class="font-bold col-span-full sm:col-auto">총 9대 / 테이블</li>
@@ -817,18 +817,19 @@
             // --- Application Initialization ---
             async function main() {
                 try {
-                    // [FIX] Updated Firebase config placeholder for clarity.
-                    // When deploying to a live server (like GitHub Pages),
-                    // replace this placeholder with your actual Firebase project configuration object.
-                    const firebaseConfig = {
-                        apiKey: "AIzaSyBqJL9rF1UFH2F9glfYQixAiOMxD0aooPg",
-                        authDomain: "ggp-camera-plan.firebaseapp.com",
-                        projectId: "ggp-camera-plan",
-                        storageBucket: "ggp-camera-plan.appspot.com",
-                        messagingSenderId: "108052983282",
-                        appId: "1:108052983282:web:39f8b769a628f81c7d8f6b",
-                        measurementId: "G-M2NDS5T0GF"
-                    };
+                    // [FIX] Using environment-provided Firebase config when available.
+                    // The hardcoded config below is a fallback for local development.
+                    const firebaseConfig = typeof __firebase_config !== 'undefined'
+                        ? JSON.parse(__firebase_config)
+                        : {
+                            apiKey: "AIzaSyBqJL9rF1UFH2F9glfYQixAiOMxD0aooPg",
+                            authDomain: "ggp-camera-plan.firebaseapp.com",
+                            projectId: "ggp-camera-plan",
+                            storageBucket: "ggp-camera-plan.appspot.com",
+                            messagingSenderId: "108052983282",
+                            appId: "1:108052983282:web:39f8b769a628f81c7d8f6b",
+                            measurementId: "G-M2NDS5T0GF"
+                        };
 
                     const appId = typeof __app_id !== 'undefined' ? __app_id : 'ggp-plan-local-dev';
                     
@@ -872,7 +873,6 @@
                     allTasks = initialTasks.map(task => ({ ...task, id: crypto.randomUUID() }));
                     document.getElementById('loading-indicator').classList.add('hidden');
                     document.getElementById('ganttChart').classList.remove('hidden');
-                    // [FIX] Removed redundant chart setup call on error
                     updateChart('all');
                 }
             }
@@ -885,4 +885,5 @@
         });
     </script>
 </body>
-</ht
+</html>
+�
