@@ -820,27 +820,15 @@
                     // [FIX] Updated Firebase config placeholder for clarity.
                     // When deploying to a live server (like GitHub Pages),
                     // replace this placeholder with your actual Firebase project configuration object.
-                // Import the functions you need from the SDKs you need
-                import { initializeApp } from "firebase/app";
-                import { getAnalytics } from "firebase/analytics";
-                // TODO: Add SDKs for Firebase products that you want to use
-                // https://firebase.google.com/docs/web/setup#available-libraries
-                
-                // Your web app's Firebase configuration
-                // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-                const firebaseConfig = {
-                  apiKey: "AIzaSyBqJL9rF1UFH2F9glfYQixAiOMxD0aooPg",
-                  authDomain: "ggp-camera-plan.firebaseapp.com",
-                  projectId: "ggp-camera-plan",
-                  storageBucket: "ggp-camera-plan.firebasestorage.app",
-                  messagingSenderId: "108052983282",
-                  appId: "1:108052983282:web:39f8b769a628f81c7d8f6b",
-                  measurementId: "G-M2NDS5T0GF"
-                };
-                
-                // Initialize Firebase
-                const app = initializeApp(firebaseConfig);
-                const analytics = getAnalytics(app);
+                    const firebaseConfig = {
+                        apiKey: "AIzaSyBqJL9rF1UFH2F9glfYQixAiOMxD0aooPg",
+                        authDomain: "ggp-camera-plan.firebaseapp.com",
+                        projectId: "ggp-camera-plan",
+                        storageBucket: "ggp-camera-plan.appspot.com",
+                        messagingSenderId: "108052983282",
+                        appId: "1:108052983282:web:39f8b769a628f81c7d8f6b",
+                        measurementId: "G-M2NDS5T0GF"
+                    };
 
                     const appId = typeof __app_id !== 'undefined' ? __app_id : 'ggp-plan-local-dev';
                     
@@ -897,4 +885,4 @@
         });
     </script>
 </body>
-</html>
+</ht
